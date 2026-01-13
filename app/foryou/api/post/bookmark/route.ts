@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     }
 
     const bookmarked = await bookmark(postUri);
+    console.log(`Bookmarked: ${bookmarked}`);
     return NextResponse.json({
         success: bookmarked,
         message: bookmarked ? 'Post bookmarked successfully' : 'Post already bookmarked'

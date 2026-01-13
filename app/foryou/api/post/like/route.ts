@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     }
 
     const liked = await like(postUri);
+    console.log(`Liked: ${liked ? 'Success' : 'Already liked'}`);
     return NextResponse.json({
         success: liked,
         message: liked ? liked : 'Post already liked'

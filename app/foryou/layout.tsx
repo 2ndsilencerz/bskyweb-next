@@ -2,7 +2,6 @@ import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import "./../globals.css";
 
 const geistSans = Geist({
@@ -39,7 +38,9 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
             </Link>
         </div>
         <div className="feed-container">
-            <div id="feed"></div>
+            <div id="feed">
+                {children}
+            </div>
             <div id="loading" className="loading" style={{display: 'none'}}>
                 <div className="loading-spinner"></div>
                 <div>Loading posts...</div>
@@ -47,9 +48,8 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
             <div id="error" className="error" style={{display: 'none'}}></div>
             <div className="load-trigger" id="load-trigger"></div>
         </div>
-        <Script src="/index.js" strategy="afterInteractive"/>
-        <Script src="/feed.js" strategy="afterInteractive"/>
-        {children}
+        {/*<Script src="/index.js" strategy="afterInteractive"/>*/}
+        {/*<Script src="/feed.js" strategy="afterInteractive"/>*/}
         <div className="footer">
             <a href="#" className="pagination-button" id="next-page-bottom" title="Next Page">▶</a>
         </div>

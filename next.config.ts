@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
                 port: '',
                 search: '',
             },
+            {
+                protocol: 'https',
+                hostname: 'cdn.bsky.app',
+                port: '',
+            }
         ],
     },
 };

@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     }
 
     const muted = await mute(postUri);
+    console.log(`Muted: ${muted}`);
     return NextResponse.json({
         success: muted,
         message: muted ? 'Post muted successfully' : 'Post already muted'

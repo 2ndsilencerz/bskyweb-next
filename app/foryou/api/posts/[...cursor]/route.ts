@@ -2,7 +2,7 @@ import { getAgent } from '@/lib/bsky';
 import {NextResponse} from "next/server";
 import {AppBskyFeedGetFeed} from "@atproto/api";
 
-const postPerPageLimit = 1;
+const postPerPageLimit = 2;
 
 type FeedRequest = {
     feed: string,
