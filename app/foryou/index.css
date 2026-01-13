@@ -1,0 +1,180 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: black;
+    color: #ffffff;
+}
+
+.header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    /*background-color: black;*/
+    padding: 10px 20px;
+    /*border-bottom: 1px solid #38444d;*/
+    z-index: 100;
+    max-width: fit-content;
+    align-items: center;
+}
+
+.header-submenu {
+    text-decoration: none;
+    padding: 0 0 0 10px;
+}
+
+.header h1 {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.feed-container {
+    max-width: 600px;
+    margin: 0 auto;
+    position: sticky;
+    top: 0;
+    padding-bottom: 100px;
+}
+
+.post-card {
+    background-color: black;
+    border-bottom: 1px solid #38444d;
+    border-left: 1px solid #38444d;
+    border-right: 1px solid #38444d;
+    padding: 15px 20px;
+    transition: background-color 0.2s;
+}
+
+/*.post-card:hover {*/
+/*    background-color: black;*/
+/*}*/
+.post-header {
+    display: flex;
+    align-items: center;
+    /*margin-bottom: 10px;*/
+}
+
+.post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1da1f2, #14171a);
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.post-info {
+    flex: 1;
+}
+
+.post-author {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.post-handle {
+    color: #8899a6;
+    font-size: 14px;
+}
+
+.post-time {
+    color: #8899a6;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+.post-content {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-left: 60px;
+    word-wrap: break-word;
+}
+
+.post-uri {
+    color: #1da1f2;
+    font-size: 13px;
+    margin-top: 10px;
+    word-break: break-all;
+}
+
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #8899a6;
+}
+
+.loading-spinner {
+    border: 3px solid #38444d;
+    border-top: 3px solid #1da1f2;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.load-trigger {
+    height: 1px;
+}
+
+.error {
+    text-align: center;
+    padding: 20px;
+    color: #f45d5d;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #8899a6;
+}
+
+.pagination-button {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 5px;
+}
+
+.page-info {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 10px;
+}
+
+.footer {
+    position: sticky;
+    bottom: 0;
+    text-align: center;
+    padding: 2px 50px;
+    background-color: black;
+    border-top: 1px solid #38444d;
+    max-height: fit-content;
+}
+
+.author-popup {
+    background-color: black;
+    border: 1px solid #38444d;
+    padding: 10px;
+}
