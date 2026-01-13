@@ -10,13 +10,12 @@ type FeedRequest = {
     cursor?: string,
 }
 
-export async function GET({ params }: { params: Promise<{ cursor: string }> }
-) {
-    const { cursor } = await params;
-    return NextResponse.json(await post(cursor));
+export async function GET(req: Request) {
+    const cursor = req.headers.get('uri') as string;
+    return NextResponse.json(await posts(cursor));
 }
 
-export async function post(cursor: string): Promise<false|AppBskyFeedGetFeed.Response> {
+export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Response> {
     const maxRetries = 3;
 
     try {
@@ -27,7 +26,7 @@ export async function post(cursor: string): Promise<false|AppBskyFeedGetFeed.Res
                 const feedReq: FeedRequest = {
                     feed: 'at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you',
                     limit: postPerPageLimit,
-                    cursor: cursor || undefined,
+                    cursor: cursor != 'x' ? cursor : '',
                 }
                 return await agent.app.bsky.feed.getFeed(feedReq);
             } catch (error) {
