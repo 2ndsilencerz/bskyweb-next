@@ -1,11 +1,11 @@
 import './index.css';
-import { post } from "@/app/foryou/api/posts/[...cursor]/route";
+import { posts } from "@/app/foryou/api/posts/[...cursor]/route";
 import { PostCard } from "@/app/foryou/postcard";
 
 let cursor: string | undefined;
 
 export default async function ForYou() {
-    const postData = await post('');
+    const postData = await posts('');
     if (!postData || !postData.data.feed) return null;
 
     cursor = postData.data.cursor;

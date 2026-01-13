@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import {PaginationButton} from "@/app/foryou/pagination";
 import "./../globals.css";
 
 const geistSans = Geist({
@@ -50,9 +51,7 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
         </div>
         {/*<Script src="/index.js" strategy="afterInteractive"/>*/}
         {/*<Script src="/feed.js" strategy="afterInteractive"/>*/}
-        <div className="footer">
-            <a href="#" className="pagination-button" id="next-page-bottom" title="Next Page">▶</a>
-        </div>
+        <PaginationButton />
         </body>
         </html>
     );
