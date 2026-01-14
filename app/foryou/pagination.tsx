@@ -8,14 +8,14 @@ export function PaginationButton() {
 
     return (
         <div className="footer">
-            <button 
+            <a
                 className="pagination-button" 
                 id="next-page-bottom" 
                 title="Next Page"
                 onClick={handleNextPage}
             >
                 ▶
-            </button>
+            </a>
         </div>
     );
 }

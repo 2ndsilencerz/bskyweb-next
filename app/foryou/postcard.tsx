@@ -11,13 +11,13 @@ import {
     isView as isEmbedExternalView,
     View as EmbedExternalView
 } from "@atproto/api/dist/client/types/app/bsky/embed/external";
-import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia"
+import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import Image from "next/image";
 // Remove these direct imports from route files
 // import {like} from "@/app/foryou/api/post/like/route";
 // import {bookmark} from "@/app/foryou/api/post/bookmark/route";
 // import {mute as muePost} from "./api/post/mute/route";
-import {JSX, useState, useEffect} from "react";
+import {JSX, useState, useEffect, useRef} from "react";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -64,37 +64,57 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const [isLiked, setIsLiked] = useState(!!post?.viewer?.like);
     const [isBookmarked, setIsBookmarked] = useState(!!post?.viewer?.bookmarked);
     const [isLikeAnimating, setIsLikeAnimating] = useState(false);
+    const likeAnimatedRef = useRef(false);
     const [isBookmarkAnimating, setIsBookmarkAnimating] = useState(false);
+    const bookmarkAnimatedRef = useRef(false);
     const [isDeleteAnimating, setIsDeleteAnimating] = useState(false);
+    const deleteAnimatedRef = useRef(false);
     const [isBlockAnimating, setIsBlockAnimating] = useState(false);
+    const blockAnimatedRef = useRef(false);
     const [isMuteAnimating, setIsMuteAnimating] = useState(false);
+    const muteAnimatedRef = useRef(false);
     useEffect(() => {
         if (isLikeAnimating) {
-            const timer = setTimeout(() => setIsLikeAnimating(false), 0);
+            const timer = setTimeout(() => {
+                setIsLikeAnimating(false);
+                likeAnimatedRef.current = false;
+            }, 0);
             return () => clearTimeout(timer);
         }
     }, [isLikeAnimating]);
     useEffect(() => {
         if (isBookmarkAnimating) {
-            const timer = setTimeout(() => setIsBookmarkAnimating(false), 0);
+            const timer = setTimeout(() => {
+                setIsBookmarkAnimating(false);
+                bookmarkAnimatedRef.current = false;
+            }, 0);
             return () => clearTimeout(timer);
         }
     }, [isBookmarkAnimating]);
     useEffect(() => {
         if (isDeleteAnimating) {
-            const timer = setTimeout(() => setIsDeleteAnimating(false), 0);
+            const timer = setTimeout(() => {
+                setIsDeleteAnimating(false);
+                deleteAnimatedRef.current = false;
+            }, 0);
             return () => clearTimeout(timer);
         }
     }, [isDeleteAnimating]);
     useEffect(() => {
         if (isBlockAnimating) {
-            const timer = setTimeout(() => setIsBlockAnimating(false), 0);
+            const timer = setTimeout(() => {
+                setIsBlockAnimating(false);
+                blockAnimatedRef.current = false;
+            }, 0);
             return () => clearTimeout(timer);
         }
     }, [isBlockAnimating]);
     useEffect(() => {
         if (isMuteAnimating) {
-            const timer = setTimeout(() => setIsMuteAnimating(false), 0);
+            const timer = setTimeout(() => {
+                setIsMuteAnimating(false);
+                muteAnimatedRef.current = false;
+            }, 0);
             return () => clearTimeout(timer);
         }
     }, [isMuteAnimating]);
@@ -130,6 +150,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     const handleLike = async () => {
         setIsLikeAnimating(true);
+        likeAnimatedRef.current = true;
         const res = await fetch('/foryou/api/post/like', {
             method: 'POST',
             headers: {
@@ -144,6 +165,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     const handleBookmark = async () => {
         setIsBookmarkAnimating(true);
+        bookmarkAnimatedRef.current = true;
         const res = await fetch('/foryou/api/post/bookmark', {
             method: 'POST',
             headers: {
@@ -316,7 +338,7 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             src={image.fullsize}
             width={width}
             height={height}
-            loading="lazy"
+            loading="eager"
             alt={image.alt || ''}
             style={{
                 width: "100%", height: "100%", borderRadius: "8px", marginTop: "10px",

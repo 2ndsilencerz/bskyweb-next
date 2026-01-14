@@ -42,10 +42,10 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
             <div id="feed">
                 {children}
             </div>
-            <div id="loading" className="loading" style={{display: 'none'}}>
-                <div className="loading-spinner"></div>
-                <div>Loading posts...</div>
-            </div>
+            {/*<div id="loading" className="loading" style={{display: 'none'}}>*/}
+            {/*    <div className="loading-spinner"></div>*/}
+            {/*    <div>Loading posts...</div>*/}
+            {/*</div>*/}
             <div id="error" className="error" style={{display: 'none'}}></div>
             <div className="load-trigger" id="load-trigger"></div>
         </div>

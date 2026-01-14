@@ -1,6 +1,8 @@
-import {NextRequest, NextResponse} from "next/server";
+import {NextResponse} from "next/server";
+import {posts} from "@/app/foryou/api/posts/[...cursor]/route";
 
-export async function GET(request: NextRequest) {
-    const url = new URL('/foryou/api/posts/x', request.url);
-    return NextResponse.redirect(url);
+export async function GET(req: Request) {
+    const uri = req.headers.get('X-URI') || '';
+    console.log(`Base route fetching with URI: ${uri}`);
+    return NextResponse.json(await posts(uri));
 }
