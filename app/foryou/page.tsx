@@ -10,6 +10,7 @@ export default function ForYou() {
     const [cursor, setCursor] = useState<string>('');
     const cursorRef = useRef<string>(''); // Add this
     const [uuid, setUuid] = useState<string>('');
+    const uuidRef = useRef<string>('');
 
     const loadNextPage = async (currentCursor: string): Promise<JSX.Element> => {
         // If you want to use the catch-all route via URL:
@@ -42,6 +43,7 @@ export default function ForYou() {
         const uuid = crypto.randomUUID();
         console.log(uuid);
         setUuid(uuid);
+        uuidRef.current = uuid;
         console.log(postReq.data.feed);
         return constructFeedPage(postReq.data.feed);
     }

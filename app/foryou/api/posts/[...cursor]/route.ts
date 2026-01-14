@@ -18,6 +18,7 @@ import {
     isView as isMediaView,
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
+import {getBlacklist} from "@/lib/blacklist";
 
 const postPerPageLimit = 10;
 
@@ -62,7 +63,7 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
                 const feedRes = await agent.app.bsky.feed.getFeed(feedReq);
                 feedRes.data.feed = feedRes.data.feed.filter((post) => {
                     let embed;
-                    let imageExist, videoExist, externalExist;
+                    let imageExist, videoExist, externalExist, containBlacklistWord = false;
                     if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
                         embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
                         imageExist = !(embed.images == null || embed.images.length == 0);
@@ -72,9 +73,18 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
                     } else if (isEmbedExternalView(post.post.embed) || isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media)) {
                         embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
                         externalExist = !(embed.external.uri == null || embed.external.uri == '');
+                    } else if (post.post.record && post.post.record.text) {
+                        containBlacklistWord = checkBlacklist(post.post.record.text as string);
                     }
-                    if (!imageExist && !videoExist && !externalExist) {
-                        console.log(`Removing post ${post.post.uri} due to missing embed`);
+
+                    if (!imageExist && !videoExist && !externalExist && containBlacklistWord) {
+                        let msg = ``
+                        if (!imageExist && !videoExist && !externalExist) {
+                            msg = `Removing post ${post.post.uri} due to missing embed`
+                        } else {
+                            msg = `Removing post ${post.post.uri} due to blacklisted word`
+                        }
+                        console.log(msg);
                         return false;
                     }
                     return true;
@@ -90,4 +100,9 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
         return false;
     }
     return false;
+}
+
+function checkBlacklist(text: string) {
+    const blacklist = getBlacklist();
+    return blacklist.some(word => text.includes(word.toLowerCase()));
 }

@@ -161,6 +161,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
         if (res.ok) setIsLiked(true);
         else alert('Failed to like post');
         setIsLikeAnimating(false);
+        likeAnimatedRef.current = false;
     };
 
     const handleBookmark = async () => {
@@ -176,6 +177,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
         if (res.ok) setIsBookmarked(true);
         else alert('Failed to bookmark post');
         setIsBookmarkAnimating(false);
+        bookmarkAnimatedRef.current = false;
     };
 
     return (

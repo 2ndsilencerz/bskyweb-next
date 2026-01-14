@@ -14,7 +14,7 @@ export const agentConfig = globalForAgent.agentConfig || {
 if (process.env.NODE_ENV !== 'production') globalForAgent.agentConfig = agentConfig;
 
 export async function getAgent() {
-  if (agentConfig.agent) {
+  if (agentConfig.agent && agentConfig.agent.hasSession) {
     return agentConfig.agent;
   }
 
