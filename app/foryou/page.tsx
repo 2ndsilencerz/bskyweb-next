@@ -38,13 +38,13 @@ export default function ForYou() {
         setCursor(newCursor);
         cursorRef.current = newCursor; // Keep ref in sync
 
-        console.log('Processing new page data...')
-        console.log(postReq.data.cursor);
+        // console.log('Processing new page data...')
+        // console.log(postReq.data.cursor);
         const uuid = crypto.randomUUID();
-        console.log(uuid);
+        // console.log(uuid);
         setUuid(uuid);
         uuidRef.current = uuid;
-        console.log(postReq.data.feed);
+        // console.log(postReq.data.feed);
         return constructFeedPage(postReq.data.feed);
     }
 
@@ -54,7 +54,7 @@ export default function ForYou() {
         //     console.log(postData);
         //     return <div className="loading" id="loading">Loading posts...</div>;
         // }
-        console.log('Constructing feed page...');
+        // console.log('Constructing feed page...');
         return (
             <div className="feed-container" id={uuid}>
                 {postData.map((item, index) => {

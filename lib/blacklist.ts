@@ -14,7 +14,10 @@ const LIST_FILE_PATH = path.join(process.cwd(), 'list.json');
 let cachedBlacklist: string[] = [];
 let lastLoaded: number = 0;
 const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
-const CACHE_TTL_API = 600 * 1000;
+
+export function blacklist() {
+    return cachedBlacklist;
+}
 
 export function startBlacklistScheduler() {
     console.log('Starting Blacklist Scheduler...');
@@ -46,7 +49,7 @@ export function startBlacklistScheduler() {
         }
         isApiUpdateRunning = true;
         try {
-            await getBlacklistFromBsky();
+            getBlacklistFromBsky().then().catch(e => console.error(`Error updating blacklist from Bsky: ${e}`));
         } finally {
             isApiUpdateRunning = false;
         }
@@ -61,6 +64,7 @@ export function getBlacklist(): string[] {
             const data: ListData = JSON.parse(fileContent);
             if (cachedBlacklist.length === 0 || cachedBlacklist.length < data.blacklist.length) {
                 cachedBlacklist = data.blacklist || [];
+                cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
             }
             lastLoaded = now;
             console.log(`Blacklist reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`);
@@ -72,45 +76,39 @@ export function getBlacklist(): string[] {
     return cachedBlacklist;
 }
 
-export async function getBlacklistFromBsky() {
-    const now = Date.now();
-    if (now - lastLoaded > CACHE_TTL_API) {
-        const agent = await getAgent();
-        const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);
-        const mutedPref = preferences.filter(pref => pref.$type === 'app.bsky.actor.defs#mutedWordsPref');
-        if (mutedPref.length === 0) {
-            console.log('No muted words found');
-            return cachedBlacklist;
-        }
-        console.log('Muted words found:', isMutedWordsPref(mutedPref[0]) ? mutedPref[0].items.length : 0);
-
-        try {
-            if (isMutedWordsPref(mutedPref[0])) {
-                mutedPref[0].items.forEach((item: MutedWord) => {
-                    if (item.targets.length == 1) {
-                        cachedBlacklist.push('#' + item.value.toLowerCase());
-                    } else {
-                        cachedBlacklist.push(item.value.toLowerCase());
-                    }
-                });
-                cachedBlacklist = [...new Set(cachedBlacklist)];
-                cachedBlacklist = cachedBlacklist.filter(word => {
-                    if (word.includes('#')) {
-                        const wordWithoutPrefix = word.replace('#', '');
-                        return !cachedBlacklist.includes(wordWithoutPrefix);
-                    }
-                    return true;
-                })
-                cachedBlacklist = cachedBlacklist.map(word => word.toLowerCase().trim()).sort((a, b) => b.localeCompare(a));
-                console.log(`Blacklist updated at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`);
-            }
-        } catch (error) {
-            console.error(`Error adding muted words to blacklist: ${error}`)
-        }
-        const fileContent = fs.readFileSync(LIST_FILE_PATH, 'utf-8');
-        const data: ListData = JSON.parse(fileContent);
-        data.blacklist = cachedBlacklist;
-        fs.writeFileSync(LIST_FILE_PATH, JSON.stringify(data, null, 2));
+export async function getBlacklistFromBsky(): Promise<void> {
+    const agent = await getAgent();
+    const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);
+    const mutedPref = preferences.filter(pref => pref.$type === 'app.bsky.actor.defs#mutedWordsPref');
+    if (mutedPref.length === 0) {
+        console.log('No muted words found');
+        return;
     }
-    return cachedBlacklist;
+    console.log('Muted words found:', isMutedWordsPref(mutedPref[0]) ? mutedPref[0].items.length : 0);
+
+    try {
+        if (isMutedWordsPref(mutedPref[0])) {
+            mutedPref[0].items.forEach((item: MutedWord) => {
+                if (item.targets.length == 1) {
+                    cachedBlacklist.push('#' + item.value.toLowerCase());
+                } else {
+                    cachedBlacklist.push(item.value.toLowerCase());
+                }
+            });
+            cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
+            console.log(`Blacklist from Bsky updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`);
+        } else {
+            console.log('Fail to process muted words');
+        }
+    } catch (error) {
+        console.error(`Error adding muted words to blacklist: ${error}`)
+    }
+    const fileContent = fs.readFileSync(LIST_FILE_PATH, 'utf-8');
+    const data: ListData = JSON.parse(fileContent);
+    data.blacklist = cachedBlacklist;
+    fs.writeFileSync(LIST_FILE_PATH, JSON.stringify(data, null, 2));
+}
+
+function removeDuplicatesAndSort(array: string[]): string[] {
+    return [...new Set(array)].sort((a, b) => b.localeCompare(a));
 }

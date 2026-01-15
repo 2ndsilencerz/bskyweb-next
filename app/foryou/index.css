@@ -34,7 +34,7 @@ body {
 }
 
 .feed-container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
     position: sticky;
     top: 0;
@@ -43,11 +43,14 @@ body {
 
 .post-card {
     background-color: black;
+    border-top: 1px solid #38444d;
     border-bottom: 1px solid #38444d;
     border-left: 1px solid #38444d;
     border-right: 1px solid #38444d;
     padding: 15px 20px;
     transition: background-color 0.2s;
+    margin-bottom: 3px;
+    border-radius: 10px;
 }
 
 /*.post-card:hover {*/
@@ -177,4 +180,13 @@ body {
     background-color: black;
     border: 1px solid #38444d;
     padding: 10px;
+}
+
+@keyframes flash {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
 }

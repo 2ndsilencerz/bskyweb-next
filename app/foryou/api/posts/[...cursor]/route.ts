@@ -4,7 +4,6 @@ import {AppBskyFeedGetFeed} from "@atproto/api";
 import {
     isView as isEmbedImagesView,
     View as EmbedImagesView,
-    ViewImage
 } from "@atproto/api/dist/client/types/app/bsky/embed/images";
 import {
     isView as isEmbedVideoView,
@@ -19,8 +18,12 @@ import {
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import {getBlacklist} from "@/lib/blacklist";
+import {getBlocklist} from "@/lib/blocklist";
+import {getMuteList} from "@/lib/mutelist";
 
 const postPerPageLimit = 10;
+let blockList: string[] = [];
+let muteLists: string[] = [];
 
 type FeedRequest = {
     feed: string,
@@ -52,6 +55,9 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
     try {
         const agent = await getAgent();
 
+        blockList = await getBlocklist();
+        muteLists = await getMuteList();
+
         console.log(`Fetching feed with cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -63,21 +69,30 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
                 const feedRes = await agent.app.bsky.feed.getFeed(feedReq);
                 feedRes.data.feed = feedRes.data.feed.filter((post) => {
                     let embed;
-                    let imageExist, videoExist, externalExist, containBlacklistWord = false;
-                    if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
-                        embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
-                        imageExist = !(embed.images == null || embed.images.length == 0);
-                    } else if (isEmbedVideoView(post.post.embed) || isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media)) {
-                        embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedVideoView;
-                        videoExist = !(embed.playlist == null || embed.playlist.length == 0);
-                    } else if (isEmbedExternalView(post.post.embed) || isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media)) {
-                        embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
-                        externalExist = !(embed.external.uri == null || embed.external.uri == '');
-                    } else if (post.post.record && post.post.record.text) {
-                        containBlacklistWord = checkBlacklist(post.post.record.text as string);
-                    }
+                    let imageExist, videoExist, externalExist;
+                    try {
+                        if (checkBlocklist(post.post.author.did)) {
+                            return false;
+                        } else if (checkMuteList(post.post.author.did)) {
+                            return false;
+                        } else if (post.post.viewer?.threadMuted) {
+                            console.log(`Post ${post.post.uri} is muted`);
+                            return false;
+                        } else if (post.post.record && post.post.record.text && checkBlacklist(post.post.record.text as string)) {
+                            return false;
+                        } else if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
+                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
+                            imageExist = !(embed.images == null || embed.images.length == 0);
+                        } else if (isEmbedVideoView(post.post.embed) || isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media)) {
+                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedVideoView;
+                            videoExist = !(embed.playlist == null || embed.playlist.length == 0);
+                        } else if (isEmbedExternalView(post.post.embed) || isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media)) {
+                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
+                            externalExist = !(embed.external.uri == null || embed.external.uri == '');
+                        }
+                    } catch (error) { console.error(error); }
 
-                    if (!imageExist && !videoExist && !externalExist && containBlacklistWord) {
+                    if (!imageExist && !videoExist && !externalExist) {
                         let msg = ``
                         if (!imageExist && !videoExist && !externalExist) {
                             msg = `Removing post ${post.post.uri} due to missing embed`
@@ -103,6 +118,27 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
 }
 
 function checkBlacklist(text: string) {
-    const blacklist = getBlacklist();
-    return blacklist.some(word => text.includes(word.toLowerCase()));
+    const blacklists = getBlacklist();
+    const matchedBlacklistTerms: string[] = [];
+    for (const tag of blacklists) {
+        if (text.toLowerCase().includes(tag.toLowerCase())) {
+            matchedBlacklistTerms.push(tag);
+        }
+    }
+    const result = matchedBlacklistTerms.length > 0;
+    // console.log(`Checked against ${blacklists.length} Blacklisted words`);
+    if (result) console.log(`From ${blacklists.length} Blacklisted word found: ${matchedBlacklistTerms.join(', ')}`);
+    return result;
+}
+
+function checkBlocklist(did: string) {
+    const result = blockList.some(word => did.includes(word.toLowerCase()));
+    if (result) console.log(`From ${blockList.length} Blocklisted account found: ${did}`);
+    return result;
+}
+
+function checkMuteList(did: string) {
+    const result = muteLists.some(word => word.includes(did.toLowerCase()));
+    if (result) console.log(`From ${muteLists.length} Muted account found: ${did}`);
+    return result;
 }

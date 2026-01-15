@@ -17,7 +17,8 @@ import Image from "next/image";
 // import {like} from "@/app/foryou/api/post/like/route";
 // import {bookmark} from "@/app/foryou/api/post/bookmark/route";
 // import {mute as muePost} from "./api/post/mute/route";
-import {JSX, useState, useEffect, useRef} from "react";
+import {JSX, useState, useRef} from "react";
+import {TextResult} from "deepl-node";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -73,51 +74,55 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const blockAnimatedRef = useRef(false);
     const [isMuteAnimating, setIsMuteAnimating] = useState(false);
     const muteAnimatedRef = useRef(false);
-    useEffect(() => {
-        if (isLikeAnimating) {
-            const timer = setTimeout(() => {
-                setIsLikeAnimating(false);
-                likeAnimatedRef.current = false;
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [isLikeAnimating]);
-    useEffect(() => {
-        if (isBookmarkAnimating) {
-            const timer = setTimeout(() => {
-                setIsBookmarkAnimating(false);
-                bookmarkAnimatedRef.current = false;
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [isBookmarkAnimating]);
-    useEffect(() => {
-        if (isDeleteAnimating) {
-            const timer = setTimeout(() => {
-                setIsDeleteAnimating(false);
-                deleteAnimatedRef.current = false;
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [isDeleteAnimating]);
-    useEffect(() => {
-        if (isBlockAnimating) {
-            const timer = setTimeout(() => {
-                setIsBlockAnimating(false);
-                blockAnimatedRef.current = false;
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [isBlockAnimating]);
-    useEffect(() => {
-        if (isMuteAnimating) {
-            const timer = setTimeout(() => {
-                setIsMuteAnimating(false);
-                muteAnimatedRef.current = false;
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [isMuteAnimating]);
+    const [translatedText, setTranslatedText] = useState('');
+    const translatedTextRef = useRef('');
+    const [translatedFrom, setTranslatedFrom] = useState('');
+    const translatedFromRef = useRef('');
+    // useEffect(() => {
+    //     if (isLikeAnimating) {
+    //         const timer = setTimeout(() => {
+    //             setIsLikeAnimating(false);
+    //             likeAnimatedRef.current = false;
+    //         }, 0);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isLikeAnimating]);
+    // useEffect(() => {
+    //     if (isBookmarkAnimating) {
+    //         const timer = setTimeout(() => {
+    //             setIsBookmarkAnimating(false);
+    //             bookmarkAnimatedRef.current = false;
+    //         }, 0);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isBookmarkAnimating]);
+    // useEffect(() => {
+    //     if (isDeleteAnimating) {
+    //         const timer = setTimeout(() => {
+    //             setIsDeleteAnimating(false);
+    //             deleteAnimatedRef.current = false;
+    //         }, 0);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isDeleteAnimating]);
+    // useEffect(() => {
+    //     if (isBlockAnimating) {
+    //         const timer = setTimeout(() => {
+    //             setIsBlockAnimating(false);
+    //             blockAnimatedRef.current = false;
+    //         }, 0);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isBlockAnimating]);
+    // useEffect(() => {
+    //     if (isMuteAnimating) {
+    //         const timer = setTimeout(() => {
+    //             setIsMuteAnimating(false);
+    //             muteAnimatedRef.current = false;
+    //         }, 0);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [isMuteAnimating]);
 
     if (!post || !isVisible) return <></>;
 
@@ -135,6 +140,23 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     const media = isMediaView(post.embed) ? post.embed.media : undefined;
     const embed = post.embed || media;
+
+    const handleTranslate = async () => {
+        const res = await fetch('/foryou/api/post/translate', {
+            method: 'POST',
+            headers: {
+                uri: postUri,
+            },
+            body: JSON.stringify({text: postText})
+        });
+        if (res.ok) {
+            const translated = await res.json() as TextResult;
+            setTranslatedFrom('From: ' + translated.detectedSourceLang);
+            translatedFromRef.current = translated.detectedSourceLang;
+            setTranslatedText(translated.text);
+            translatedTextRef.current = translated.text;
+        }
+    }
 
     const handleMutePost = async () => {
         const res = await fetch('/foryou/api/post/mute', {
@@ -219,7 +241,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 border: 'none',
                                 cursor: 'pointer',
                                 padding: '4px'
-                            }} title="Translate">
+                            }} title="Translate" onClick={handleTranslate}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -263,7 +285,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                                      style={{
-                                         pointerEvents: 'none', animation: isDeleteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'}}>
+                                         pointerEvents: 'none',
+                                         animation: isDeleteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'}}>
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
                                 </svg>
@@ -273,8 +296,13 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                 </div>
             </div>
             <div className="post-content">
-                <div className="post-text">
+                <div className="post-text" id={`post-text-${postIndex}`}>
                     {convertHashtagsToLinks(postText)}
+                </div>
+                <div className="post-text" id={`translated-text-${postIndex}`} style={{display: translatedText ? 'block' : 'none'}}>
+                    {translatedFrom}
+                    <br/>
+                    {translatedText}
                 </div>
                 {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
                 {post.embed?.$type === 'app.bsky.embed.video#view' && (
@@ -389,8 +417,10 @@ function ExternalEmbed({external}: { external: EmbedExternalView }) {
             {external.external.thumb && (
                 <Image
                     src={external.external.thumb}
-                    loading="lazy"
-                    style={{width: "100%", height: "200px", objectFit: "cover"}}
+                    loading="eager"
+                    width="500"
+                    height="200"
+                    style={{objectFit: "scale-down"}}
                     alt={external.external.title || ''}
                 />
             )}
