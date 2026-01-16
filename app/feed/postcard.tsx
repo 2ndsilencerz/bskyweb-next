@@ -12,6 +12,8 @@ import {
     View as EmbedExternalView
 } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
+// import {isView as isEmbedView} from "@atproto/api/dist/client/types/app/bsky/embed/record";
+// import {isView as isRecordView} from "@atproto/api/dist/client/types/app/bsky/";
 import Image from "next/image";
 // Remove these direct imports from route files
 // import {like} from "@/app/foryou/api/post/like/route";
@@ -19,6 +21,7 @@ import Image from "next/image";
 // import {mute as muePost} from "./api/post/mute/route";
 import {JSX, useState, useRef} from "react";
 import {TextResult} from "deepl-node";
+import {RecordView} from "@atproto/api/dist/client/types/tools/ozone/moderation/defs";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -74,6 +77,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const blockAnimatedRef = useRef(false);
     const [isMuteAnimating, setIsMuteAnimating] = useState(false);
     const muteAnimatedRef = useRef(false);
+    const [isTranslateAnimating, setIsTranslateAnimating] = useState(false);
+    const translateAnimatedRef = useRef(false);
     const [translatedText, setTranslatedText] = useState('');
     const translatedTextRef = useRef('');
     const [translatedFrom, setTranslatedFrom] = useState('');
@@ -129,6 +134,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const postId = post.uri.split('/').pop() || '';
     const postUri = post.uri;
     const postText = (post.record as { text?: string })?.text as string || '';
+    const postComment = post.replyCount ? `Comment: ${post.replyCount}` : '';
     const authorHandle = post.author.handle;
     const authorAvatar = post.author.avatar;
     const authorDisplayName = post.author.displayName || post.author.handle;
@@ -142,7 +148,9 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const embed = post.embed || media;
 
     const handleTranslate = async () => {
-        const res = await fetch('/foryou/api/post/translate', {
+        setIsTranslateAnimating(true);
+        translateAnimatedRef.current = true;
+        const res = await fetch('/api/post/translate', {
             method: 'POST',
             headers: {
                 uri: postUri,
@@ -156,24 +164,68 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
             setTranslatedText(translated.text);
             translatedTextRef.current = translated.text;
         }
+        setIsTranslateAnimating(false);
+        translateAnimatedRef.current = false;
+    }
+
+    const handleMuteAuthor = async () => {
+        setIsMuteAnimating(true);
+        muteAnimatedRef.current = true;
+        const res = await fetch('/api/profile/mute', {
+            method: 'POST',
+            headers: {
+                uri: post.author.handle,
+            },
+            body: JSON.stringify({uri: post.author.handle})
+        });
+        if (res.ok) {
+            setIsVisible(false);
+            return;
+        } else alert('Failed to mute author');
+        setIsMuteAnimating(false);
+        muteAnimatedRef.current = false;
+    }
+
+    const handleBlockAuthor = async () => {
+        setIsBlockAnimating(true);
+        blockAnimatedRef.current = true;
+        const res = await fetch('/api/profile/block', {
+            method: 'POST',
+            headers: {
+                uri: post.author.did,
+            },
+            body: JSON.stringify({uri: post.author.did})
+        });
+        if (res.ok) {
+            setIsVisible(false);
+            return;
+        } else alert('Failed to block author');
+        setIsBlockAnimating(false);
+        blockAnimatedRef.current = false;
     }
 
     const handleMutePost = async () => {
-        const res = await fetch('/foryou/api/post/mute', {
+        setIsDeleteAnimating(true);
+        deleteAnimatedRef.current = true;
+        const res = await fetch('/api/post/mute', {
             method: 'POST',
             headers: {
                 uri: postUri,
             },
             body: JSON.stringify({uri: postUri})
         });
-        if (res.ok) setIsVisible(false);
-        else alert('Failed to mute post');
+        if (res.ok) {
+            setIsVisible(false);
+            return;
+        } else alert('Failed to mute post');
+        setIsDeleteAnimating(false);
+        deleteAnimatedRef.current = false;
     };
 
     const handleLike = async () => {
         setIsLikeAnimating(true);
         likeAnimatedRef.current = true;
-        const res = await fetch('/foryou/api/post/like', {
+        const res = await fetch('/api/post/like', {
             method: 'POST',
             headers: {
                 uri: postUri,
@@ -189,7 +241,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleBookmark = async () => {
         setIsBookmarkAnimating(true);
         bookmarkAnimatedRef.current = true;
-        const res = await fetch('/foryou/api/post/bookmark', {
+        const res = await fetch('/api/post/bookmark', {
             method: 'POST',
             headers: {
                 uri: postUri,
@@ -235,12 +287,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             </a>
                         </div>
                         <div className="post-controls">
-                            <button id={`translate-post-${postIndex}`} style={{
-                                color: 'white',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '4px'
+                            <button id={`translate-post-${postIndex}`} className="control-button" style={{
+                                animation: isTranslateAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'
                             }} title="Translate" onClick={handleTranslate}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -250,14 +298,9 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                         d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                                 </svg>
                             </button>
-                            <button id={`mute-author-${postIndex}`} style={{
-                                color: 'white',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '4px',
+                            <button id={`mute-author-${postIndex}`} className="control-button" style={{
                                 animation: isMuteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                            }} title="Mute Author">
+                            }} title="Mute Author" onClick={handleMuteAuthor}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -265,28 +308,20 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     <line x1="17" y1="9" x2="23" y2="15"></line>
                                 </svg>
                             </button>
-                            <button id={`block-author-${postIndex}`} style={{
-                                color: 'white',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '4px',
+                            <button id={`block-author-${postIndex}`} className="control-button" style={{
                                 animation: isBlockAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                            }} title="Block Author">
+                            }} title="Block Author" onClick={handleBlockAuthor}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
                                 </svg>
                             </button>
-                            <button id={`delete-post-${postIndex}`}
-                                    style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer'}}
-                                    title="Delete" onClick={handleMutePost}>
+                            <button id={`delete-post-${postIndex}`} className="control-button" style={{
+                                animation: isDeleteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'
+                            }} title="Delete" onClick={handleMutePost}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                                     style={{
-                                         pointerEvents: 'none',
-                                         animation: isDeleteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'}}>
+                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
                                 </svg>
@@ -310,32 +345,23 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                 )}
                 {isEmbedExternalView(embed) && <ExternalEmbed external={embed}/>}
 
-                <div className="post-actions"
-                     style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px'}}>
-                    <button className="action-button" style={{
+                <div className="post-actions">
+                    <a className="control-button" href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
+                       target="_blank" rel="noopener noreferrer" style={{textDecoration: 'none', color: 'inherit', display: postComment ? 'block' : 'none'}}>
+                        {postComment}
+                    </a>
+                    <button className="control-button" style={{
                         color: isLiked ? '#e0245e' : 'white',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        paddingTop: '5px',
-                        paddingRight: '10px'
+                        animation: isLikeAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
                     }} onClick={handleLike}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? '#e0245e' : 'none'}
-                             stroke="currentColor" strokeWidth="2"
-                             style={{
-                                 animation: isLikeAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                             }}>
+                             stroke="currentColor" strokeWidth="2">
                         <path
                                 d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
                     </button>
-                    <button className="action-button" style={{
+                    <button className="control-button" style={{
                         color: isBookmarked ? '#1d9bf0' : 'white',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        paddingTop: '5px',
-                        paddingRight: '10px',
                         animation: isBookmarkAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
                     }} onClick={handleBookmark}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? '#1d9bf0' : 'none'}

@@ -33,23 +33,18 @@ type FeedRequest = {
 
 export async function GET(
     req: Request,
-    { params }: { params: Promise<{ cursor: string[] }> }
+    { params }: { params: Promise<{ type: string, cursor: string[] }> }
 ) {
-    const resolvedParams = await params;
-    // The cursor from the URL (if using [...cursor]) comes as an array
-    const urlCursor = resolvedParams.cursor?.join('/');
-    // Your header-based cursor
-    const headerCursor = req.headers.get('X-URI');
+    const paramsAwait = await params;
+    const type = paramsAwait.type || 'foryou';
+    const cursor = paramsAwait.cursor[0] || undefined;
 
-    const cursor = headerCursor || urlCursor || '';
-    
-    console.log(`Resolved cursor: ${cursor}`);
-    
-    const result = await posts(cursor);
-    return NextResponse.json(result);
+    const uri = req.headers.get('X-URI') || cursor || '';
+    console.log(`Base route fetching with URI: ${uri}, type: ${type}`);
+    return NextResponse.json(await posts(uri, type));
 }
 
-export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Response> {
+export async function posts(cursor: string, type?: string): Promise<false|AppBskyFeedGetFeed.Response> {
     const maxRetries = 3;
 
     try {
@@ -58,15 +53,35 @@ export async function posts(cursor: string): Promise<false|AppBskyFeedGetFeed.Re
         blockList = await getBlocklist();
         muteLists = await getMuteList();
 
+        let feedUrl = '';
+        if (type && type === 'foryou') {
+            feedUrl = `at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you`;
+        } else if (type && type === 'wuwa') {
+            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/wuwa-cf`
+        } else if (type && type === 'miku') {
+            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/hatsunemiku-cf`
+        } else if (type && type === 'touhou') {
+            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/touhou-cf`
+        } else if (type && type === 'prsk') {
+            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/prsk-custom`
+        }
+
         console.log(`Fetching feed with cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const feedReq: FeedRequest = {
-                    feed: 'at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you',
+                    feed: feedUrl,
                     limit: postPerPageLimit,
                     cursor: cursor != 'x' ? cursor : '',
                 }
-                const feedRes = await agent.app.bsky.feed.getFeed(feedReq);
+                const feedRes = await agent.app.bsky.feed.getFeed(feedReq).catch(error => {
+                    console.error(`Attempt ${attempt} failed:`, error);
+                    return false;
+                }).then(res => res) as AppBskyFeedGetFeed.Response;
+
+                if (!feedRes) return false;
+
+                console.log(`Feed: ${JSON.stringify(feedRes)}`)
                 feedRes.data.feed = feedRes.data.feed.filter((post) => {
                     let embed;
                     let imageExist, videoExist, externalExist;

@@ -14,11 +14,11 @@ body {
     display: flex;
     position: sticky;
     top: 0;
-    /*background-color: black;*/
+    background-color: black;
     padding: 10px 20px;
-    /*border-bottom: 1px solid #38444d;*/
+    border-bottom: 1px solid #38444d;
     z-index: 100;
-    max-width: fit-content;
+    /*max-width: fit-content;*/
     align-items: center;
 }
 
@@ -34,7 +34,7 @@ body {
 }
 
 .feed-container {
-    max-width: 700px;
+    max-width: 600px;
     margin: 0 auto;
     position: sticky;
     top: 0;
@@ -182,6 +182,36 @@ body {
     padding: 10px;
 }
 
+.control-button {
+    color: white;
+    background: none;
+    border: 1px solid #38444d;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.post-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-bottom: 10px;
+    max-height: 38px;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.pagination-button {
+    border: 1px solid #38444d;
+    border-radius: 10px;
+    padding: 5px 5px;
+}
+
 @keyframes flash {
     0%, 100% {
         opacity: 1;
@@ -189,4 +219,18 @@ body {
     50% {
         opacity: 0.3;
     }
+}
+
+.header-divider {
+    width: 10px;
+    height: 30px;
+}
+
+.header-icon {
+    border-radius: 50%;
+    border: 2px solid #38444d;
+}
+
+.header-submenu-text {
+    padding-left: 6px;
 }

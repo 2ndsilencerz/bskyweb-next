@@ -1,7 +1,7 @@
 import { getAgent } from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
-const cachedBlocklist: string[] = [];
+let cachedBlocklist: string[] = [];
 let lastLoaded: number = 0;
 const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
 
@@ -32,18 +32,12 @@ export async function getBlocklist(): Promise<string[]> {
             do {
                 const response = await agent.app.bsky.graph.getBlocks({limit: 100, cursor})
                 for (const block of response.data.blocks) {
-                    if (cachedBlocklist.includes(block.did)) continue
                     newBlocks.push(block)
                 }
                 cursor = response.data.cursor
             } while (cursor)
 
-            if (newBlocks.length > 0) {
-                newBlocks.forEach(block => {
-                    cachedBlocklist.push(block.did)
-                })
-            }
-
+            cachedBlocklist = new Set(newBlocks).values().toArray().map(block => block.did) as string[];
             lastLoaded = now;
             console.log(`Blocklist from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlocklist.length}`);
         } catch (error) {

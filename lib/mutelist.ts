@@ -1,7 +1,7 @@
 import { getAgent } from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
-const cachedMutelist: string[] = [];
+let cachedMutelist: string[] = [];
 let lastLoaded: number = 0;
 const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
 
@@ -32,18 +32,12 @@ export async function getMuteList(): Promise<string[]> {
             do {
                 const response = await agent.app.bsky.graph.getMutes({limit: 100, cursor})
                 for (const mute of response.data.mutes) {
-                    if (cachedMutelist.includes(mute.did)) continue
                     newMutes.push(mute)
                 }
                 cursor = response.data.cursor
             } while (cursor)
 
-            if (newMutes.length > 0) {
-                newMutes.forEach(mute => {
-                    cachedMutelist.push(mute.did)
-                })
-            }
-
+            cachedMutelist = new Set(newMutes).values().toArray().map(mute => mute.did) as string[];
             lastLoaded = now;
             console.log(`MuteList from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${cachedMutelist.length}`);
         } catch (error) {

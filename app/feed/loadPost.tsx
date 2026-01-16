@@ -1,11 +1,11 @@
 'use client'
 
 import './index.css';
-import { PostCard } from "@/app/foryou/postcard";
+import { PostCard } from "@/app/feed/postcard";
 import {JSX, useEffect, useState, useRef} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
-export default function ForYou() {
+export default function LoadPost(feedPath: string) {
     const [feedPage, setFeedPage] = useState<JSX.Element>();
     const [cursor, setCursor] = useState<string>('');
     const cursorRef = useRef<string>(''); // Add this
@@ -14,9 +14,10 @@ export default function ForYou() {
 
     const loadNextPage = async (currentCursor: string): Promise<JSX.Element> => {
         // If you want to use the catch-all route via URL:
-        const url = currentCursor 
-            ? `/foryou/api/posts/${encodeURIComponent(currentCursor)}` 
-            : '/foryou/api/posts/';
+        const url = currentCursor
+            ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
+            : `/api/posts/${feedPath}/`;
+
 
         const res = await fetch(url, {
             method: 'GET',
@@ -33,7 +34,7 @@ export default function ForYou() {
             console.log('No data received from API, returning null...');
             return (<></>);
         }
-        
+
         const newCursor = postReq.data.cursor as string;
         setCursor(newCursor);
         cursorRef.current = newCursor; // Keep ref in sync
@@ -45,6 +46,7 @@ export default function ForYou() {
         setUuid(uuid);
         uuidRef.current = uuid;
         // console.log(postReq.data.feed);
+        window.dispatchEvent(new CustomEvent('load-next-page-finished'));
         return constructFeedPage(postReq.data.feed);
     }
 
@@ -69,7 +71,6 @@ export default function ForYou() {
     }
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFeedPage(loadingDiv());
         loadNextPage('').then(res => {
             setFeedPage(res);

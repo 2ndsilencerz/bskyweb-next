@@ -19,7 +19,7 @@ export async function POST(req: Request) {
             'en-US',
         );
 
-        console.log(request);
+        // console.log(request);
         return Response.json(request, {status: 200});
     } catch (error) {
         console.error(`Error translating text: ${error}`);

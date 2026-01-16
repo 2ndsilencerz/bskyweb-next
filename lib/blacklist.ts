@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { getAgent } from './bsky';
+import {getAgent} from './bsky';
 import {isMutedWordsPref, MutedWord} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import {Preferences} from "@atproto/api/src/client/types/app/bsky/actor/defs";
+import {AtpAgent} from "@atproto/api";
 
 interface ListData {
     blacklist: string[];
@@ -60,12 +62,11 @@ export function getBlacklist(): string[] {
     const now = Date.now();
     if (now - lastLoaded > CACHE_TTL_LOCAL) {
         try {
-            const fileContent = fs.readFileSync(LIST_FILE_PATH, 'utf-8');
-            const data: ListData = JSON.parse(fileContent);
-            if (cachedBlacklist.length === 0 || cachedBlacklist.length < data.blacklist.length) {
-                cachedBlacklist = data.blacklist || [];
-                cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
-            }
+            getBlacklistFromLocal();
+            saveBlacklistToLocal({blacklist: cachedBlacklist, dictionary: [], ignoreList: []});
+            console.log(
+                `Blacklist from local file reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`
+            )
             lastLoaded = now;
             console.log(`Blacklist reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`);
         } catch (error) {
@@ -103,12 +104,54 @@ export async function getBlacklistFromBsky(): Promise<void> {
     } catch (error) {
         console.error(`Error adding muted words to blacklist: ${error}`)
     }
+    const data: ListData = readBlacklistFromLocal();
+    data.blacklist.push(...cachedBlacklist);
+    data.blacklist = removeDuplicatesAndSort(data.blacklist);
+    saveBlacklistToLocal(data);
+    saveBlacklistToBsky(agent, preferences);
+}
+
+function getBlacklistFromLocal() {
+    const data: ListData = readBlacklistFromLocal();
+    cachedBlacklist.push(...data.blacklist);
+    cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
+}
+
+function readBlacklistFromLocal(): ListData {
     const fileContent = fs.readFileSync(LIST_FILE_PATH, 'utf-8');
-    const data: ListData = JSON.parse(fileContent);
-    data.blacklist = cachedBlacklist;
-    fs.writeFileSync(LIST_FILE_PATH, JSON.stringify(data, null, 2));
+    return JSON.parse(fileContent);
 }
 
 function removeDuplicatesAndSort(array: string[]): string[] {
-    return [...new Set(array)].sort((a, b) => b.localeCompare(a));
+    array = array.filter(word => {
+        word = word.toLowerCase();
+        if (word.includes('#')) {
+            const wordWithoutPrefix = word.replace('#', '')
+            return !array.includes(wordWithoutPrefix)
+        }
+        return true
+    });
+    return [...new Set(array)].sort((a, b) => b.localeCompare(a)).map(word => word.toLowerCase());
+}
+
+function saveBlacklistToLocal(data: ListData) {
+    fs.writeFileSync(LIST_FILE_PATH, JSON.stringify(data, null, 2));
+}
+
+function saveBlacklistToBsky(agent: AtpAgent, preferences: Preferences) {
+    preferences.filter(pref => isMutedWordsPref(pref)).forEach(pref => {
+        pref.items = []
+        for (let word of cachedBlacklist) {
+            if (word.includes('#')) {
+                word = word.replace('#','')
+                pref.items.push({value: word.toLowerCase(), targets: ["tag"], actorTarget: "all"})
+            } else {
+                pref.items.push({value: word.toLowerCase(), targets: ["tag", "content"], actorTarget: "all"})
+            }
+        }
+        pref.items.sort((a: MutedWord, b: MutedWord) => b.value.localeCompare(a.value))
+    })
+    agent.app.bsky.actor.putPreferences({preferences: preferences}).then((response) => {
+        console.log(`[${new Date().toISOString()}] Mutes added successfully: ${JSON.stringify(response)}`)
+    }).catch(e => console.error(`[${new Date().toISOString()}] Error updating muted words list: ${e}`))
 }
