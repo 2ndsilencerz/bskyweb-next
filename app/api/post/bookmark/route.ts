@@ -1,11 +1,11 @@
-import { getAgent } from '@/lib/bsky';
+import {getAgent} from '@/lib/bsky';
 import {NextResponse} from "next/server";
 
 export async function POST(req: Request) {
     const postUri = req.headers.get('uri');
 
     if (!postUri) {
-        return NextResponse.json({ error: 'URI header is required' }, { status: 400 });
+        return NextResponse.json({error: 'URI header is required'}, {status: 400});
     }
 
     const bookmarked = await bookmark(postUri);
@@ -23,7 +23,7 @@ export async function bookmark(uri: string) {
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const postDetails = await agent.app.bsky.feed.getPosts({ uris: [uri] });
+                const postDetails = await agent.app.bsky.feed.getPosts({uris: [uri]});
 
                 if (!postDetails.data.posts.length) {
                     return false;

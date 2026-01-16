@@ -1,4 +1,4 @@
-import { getAgent } from './bsky';
+import {getAgent} from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 let cachedBlocklist: string[] = [];
@@ -13,7 +13,7 @@ export function startBlocklistScheduler() {
     console.log('Starting Blocklist Scheduler...');
 
     // Initial load
-    getBlocklist().then().catch(e => console.error(`Error loading blocklist: ${e}`) );
+    getBlocklist().then().catch(e => console.error(`Error loading blocklist: ${e}`));
 
     // Schedule periodic updates (every 10 minute)
     setInterval(async () => {

@@ -143,7 +143,7 @@ function saveBlacklistToBsky(agent: AtpAgent, preferences: Preferences) {
         pref.items = []
         for (let word of cachedBlacklist) {
             if (word.includes('#')) {
-                word = word.replace('#','')
+                word = word.replace('#', '')
                 pref.items.push({value: word.toLowerCase(), targets: ["tag"], actorTarget: "all"})
             } else {
                 pref.items.push({value: word.toLowerCase(), targets: ["tag", "content"], actorTarget: "all"})

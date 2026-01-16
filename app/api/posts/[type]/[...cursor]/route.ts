@@ -1,14 +1,11 @@
-import { getAgent } from '@/lib/bsky';
+import {getAgent} from '@/lib/bsky';
 import {NextResponse} from "next/server";
 import {AppBskyFeedGetFeed} from "@atproto/api";
 import {
     isView as isEmbedImagesView,
     View as EmbedImagesView,
 } from "@atproto/api/dist/client/types/app/bsky/embed/images";
-import {
-    isView as isEmbedVideoView,
-    View as EmbedVideoView
-} from "@atproto/api/dist/client/types/app/bsky/embed/video";
+import {isView as isEmbedVideoView, View as EmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
 import {
     isView as isEmbedExternalView,
     View as EmbedExternalView
@@ -33,7 +30,7 @@ type FeedRequest = {
 
 export async function GET(
     req: Request,
-    { params }: { params: Promise<{ type: string, cursor: string[] }> }
+    {params}: { params: Promise<{ type: string, cursor: string[] }> }
 ) {
     const paramsAwait = await params;
     const type = paramsAwait.type || 'foryou';
@@ -44,7 +41,7 @@ export async function GET(
     return NextResponse.json(await posts(uri, type));
 }
 
-export async function posts(cursor: string, type?: string): Promise<false|AppBskyFeedGetFeed.Response> {
+export async function posts(cursor: string, type?: string): Promise<false | AppBskyFeedGetFeed.Response> {
     const maxRetries = 3;
 
     try {
@@ -105,7 +102,9 @@ export async function posts(cursor: string, type?: string): Promise<false|AppBsk
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
                             externalExist = !(embed.external.uri == null || embed.external.uri == '');
                         }
-                    } catch (error) { console.error(error); }
+                    } catch (error) {
+                        console.error(error);
+                    }
 
                     if (!imageExist && !videoExist && !externalExist) {
                         let msg = ``

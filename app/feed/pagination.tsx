@@ -10,7 +10,7 @@ export function PaginationButton() {
         <div className="footer">
             <button
                 className="pagination-button"
-                id="next-page-bottom" 
+                id="next-page-bottom"
                 title="Next Page"
                 onClick={handleNextPage}
                 style={{

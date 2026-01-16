@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     const postUri = req.headers.get('uri');
 
     if (!postUri) {
-        return NextResponse.json({ error: 'URI header is required' }, { status: 400 });
+        return NextResponse.json({error: 'URI header is required'}, {status: 400});
     }
     const blocked = await block(postUri);
     console.log(`Blocked: ${blocked ? 'Success' : 'Already blocked'}`);
@@ -21,7 +21,7 @@ export async function block(did: string) {
         const maxRetries = 3;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const response = await agent.app.bsky.graph.block.create({repo: agent.session?.did || ''},{
+                const response = await agent.app.bsky.graph.block.create({repo: agent.session?.did || ''}, {
                         subject: did,
                         createdAt: new Date().toISOString()
                     }

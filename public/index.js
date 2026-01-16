@@ -245,7 +245,7 @@ async function translateCall(text) {
 
 async function fetchPostDetails(uri) {
     try {
-        uri = !isForYou ? `/api/post/${encodeURIComponent(uri)}` : `/foryou/api/post/${encodeURIComponent(uri)}`;  
+        uri = !isForYou ? `/api/post/${encodeURIComponent(uri)}` : `/foryou/api/post/${encodeURIComponent(uri)}`;
         const response = await fetch(uri);
         if (!response.ok) return null;
         return await response.json();
@@ -277,7 +277,9 @@ async function displayPageResults(containerId) {
         container.style.display = 'none';
         try {
             await waitForMediaToLoad(container);
-        } catch (error) { console.error('Error waiting for media to load:', error); }
+        } catch (error) {
+            console.error('Error waiting for media to load:', error);
+        }
         //     .then(() => {
         //     container.style.display = 'block';
         //     currentContainerId = containerId;
@@ -292,7 +294,9 @@ async function displayPageResults(containerId) {
 }
 
 function hidePageResults(containerId) {
-    if (containerId === '') { return; }
+    if (containerId === '') {
+        return;
+    }
     const container = document.getElementById(containerId);
     if (container) {
         container.style.display = 'none';
@@ -459,8 +463,8 @@ async function createPostCard(post, postIndex) {
         `).join('') : ''}
         ${postData.embedVideoUri ? `
             ${!postData.nsfwPost ?
-            `<video src="${postData.embedVideoUri}" controls style="width: 100%; height: auto; border-radius: 8px; margin-top: 10px;"></video>` :
-            `<video src="${postData.embedVideoUri}" controls style="width: 100%; height: auto; border-radius: 8px; margin-top: 10px; filter: blur(5px);" onclick="this.style.filter = ''"></video>`}
+        `<video src="${postData.embedVideoUri}" controls style="width: 100%; height: auto; border-radius: 8px; margin-top: 10px;"></video>` :
+        `<video src="${postData.embedVideoUri}" controls style="width: 100%; height: auto; border-radius: 8px; margin-top: 10px; filter: blur(5px);" onclick="this.style.filter = ''"></video>`}
         ` : ''}
         ${postData.embedExternalUri ? `
         <a href="${postData.embedExternalUri}" target="_blank" rel="noopener noreferrer" class="external-link-preview" style="display: block; margin-top: 12px; border: 1px solid #e1e8ed; border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit;">
@@ -566,7 +570,9 @@ const loadPage = async () => {
         // console.log(pageInUrl)
         page = pathParts.length > 0 ? parseInt(pathParts[pageInUrl], 10) : 1;
         // console.log(page)
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+    }
     const feedElement = document.getElementById('feed');
     try {
         const url = !isForYou ? `/api/posts/${page}` : `/foryou/api/posts/${forYouCursor ? encodeURIComponent(forYouCursor) : ''}`;

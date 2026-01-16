@@ -17,23 +17,25 @@ export default function MainLayout(title: string, children: React.ReactNode) {
                 <div className="header-divider"></div>
                 <Link href="/feed/wuwa" className="header-submenu">
                     <div style={{display: 'flex', alignItems: 'center'}}>
-                    <Image src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreiflhlucxlb6wsedzae5bg7js7qjv2pqumahmsm2t6teodloi7zamm@jpeg"
-                           alt="wuwa icon"
-                           width={28}
-                           height={28}
-                           className="header-icon">
-                    </Image>
-                    <h1 className="header-submenu-text">鳴潮</h1>
+                        <Image
+                            src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreiflhlucxlb6wsedzae5bg7js7qjv2pqumahmsm2t6teodloi7zamm@jpeg"
+                            alt="wuwa icon"
+                            width={28}
+                            height={28}
+                            className="header-icon">
+                        </Image>
+                        <h1 className="header-submenu-text">鳴潮</h1>
                     </div>
                 </Link>
                 <div className="header-divider"></div>
                 <Link href="/feed/miku" className="header-submenu">
                     <div style={{display: 'flex', alignItems: 'center'}}>
-                        <Image src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreifux4qjcih7chotf7gyhktuviyfuxur5q4b5pr6su2g4cmqncovoy@jpeg"
-                               alt="wuwa icon"
-                               width={28}
-                               height={28}
-                               className="header-icon">
+                        <Image
+                            src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreifux4qjcih7chotf7gyhktuviyfuxur5q4b5pr6su2g4cmqncovoy@jpeg"
+                            alt="wuwa icon"
+                            width={28}
+                            height={28}
+                            className="header-icon">
                         </Image>
                         <h1 className="header-submenu-text">初音ミク</h1>
                     </div>
@@ -41,11 +43,12 @@ export default function MainLayout(title: string, children: React.ReactNode) {
                 <div className="header-divider"></div>
                 <Link href="/feed/touhou" className="header-submenu">
                     <div style={{display: 'flex', alignItems: 'center'}}>
-                        <Image src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreigkvc6f3lhm66o6q6q3rkdbxuxcrc5ki5ctncvuv6nftlhvrhy35m@jpeg"
-                               alt="wuwa icon"
-                               width={28}
-                               height={28}
-                               className="header-icon">
+                        <Image
+                            src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreigkvc6f3lhm66o6q6q3rkdbxuxcrc5ki5ctncvuv6nftlhvrhy35m@jpeg"
+                            alt="wuwa icon"
+                            width={28}
+                            height={28}
+                            className="header-icon">
                         </Image>
                         <h1 className="header-submenu-text">東方Project</h1>
                     </div>
@@ -53,11 +56,12 @@ export default function MainLayout(title: string, children: React.ReactNode) {
                 <div className="header-divider"></div>
                 <Link href="/feed/prsk" className="header-submenu">
                     <div style={{display: 'flex', alignItems: 'center'}}>
-                        <Image src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreic2nvie6tt7owvjzs2iablsw3xkp7ymvbfzlrmzbrkul4trqadrzq@jpeg"
-                               alt="wuwa icon"
-                               width={28}
-                               height={28}
-                               className="header-icon">
+                        <Image
+                            src="https://cdn.bsky.app/img/avatar/plain/did:plc:dyxukde6k2muyhg2waekj2rx/bafkreic2nvie6tt7owvjzs2iablsw3xkp7ymvbfzlrmzbrkul4trqadrzq@jpeg"
+                            alt="wuwa icon"
+                            width={28}
+                            height={28}
+                            className="header-icon">
                         </Image>
                         <h1 className="header-submenu-text">PJSK</h1>
                     </div>

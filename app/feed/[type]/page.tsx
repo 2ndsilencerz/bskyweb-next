@@ -8,7 +8,7 @@ export default function ForYou({params}: { params: { type: string } }) {
     // console.log(`Path: ${path}`);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    const { type: rawType } = use(params);
+    const {type: rawType} = use(params);
     const type = rawType || 'foryou';
 
     return LoadPost(type);

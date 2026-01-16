@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     const postUri = req.headers.get('uri');
 
     if (!postUri) {
-        return NextResponse.json({ error: 'URI header is required' }, { status: 400 });
+        return NextResponse.json({error: 'URI header is required'}, {status: 400});
     }
     const muted = await mute(postUri);
     console.log(`Muted: ${muted ? 'Success' : 'Already muted'}`);

@@ -1,4 +1,4 @@
-import { getAgent } from './bsky';
+import {getAgent} from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 let cachedMutelist: string[] = [];
@@ -13,7 +13,7 @@ export function startMuteListScheduler() {
     console.log('Starting MuteList Scheduler...');
 
     // Initial load
-    getMuteList().then().catch(e => console.error(`Error loading muteList: ${e}`) );
+    getMuteList().then().catch(e => console.error(`Error loading muteList: ${e}`));
 
     // Schedule periodic updates (every 10 minute)
     setInterval(async () => {

@@ -12,16 +12,9 @@ import {
     View as EmbedExternalView
 } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
-// import {isView as isEmbedView} from "@atproto/api/dist/client/types/app/bsky/embed/record";
-// import {isView as isRecordView} from "@atproto/api/dist/client/types/app/bsky/";
 import Image from "next/image";
-// Remove these direct imports from route files
-// import {like} from "@/app/foryou/api/post/like/route";
-// import {bookmark} from "@/app/foryou/api/post/bookmark/route";
-// import {mute as muePost} from "./api/post/mute/route";
-import {JSX, useState, useRef} from "react";
+import {JSX, useRef, useState} from "react";
 import {TextResult} from "deepl-node";
-import {RecordView} from "@atproto/api/dist/client/types/tools/ozone/moderation/defs";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -67,6 +60,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const [isVisible, setIsVisible] = useState(true);
     const [isLiked, setIsLiked] = useState(!!post?.viewer?.like);
     const [isBookmarked, setIsBookmarked] = useState(!!post?.viewer?.bookmarked);
+    const [isTranslated, setIsTranslated] = useState(false);
+    const translatedRef = useRef(false);
     const [isLikeAnimating, setIsLikeAnimating] = useState(false);
     const likeAnimatedRef = useRef(false);
     const [isBookmarkAnimating, setIsBookmarkAnimating] = useState(false);
@@ -83,6 +78,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const translatedTextRef = useRef('');
     const [translatedFrom, setTranslatedFrom] = useState('');
     const translatedFromRef = useRef('');
+    const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
     // useEffect(() => {
     //     if (isLikeAnimating) {
     //         const timer = setTimeout(() => {
@@ -163,6 +159,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
             translatedFromRef.current = translated.detectedSourceLang;
             setTranslatedText(translated.text);
             translatedTextRef.current = translated.text;
+            setIsTranslated(true);
+            translatedRef.current = true;
         }
         setIsTranslateAnimating(false);
         translateAnimatedRef.current = false;
@@ -232,8 +230,10 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
             },
             body: JSON.stringify({uri: postUri})
         });
-        if (res.ok) setIsLiked(true);
-        else alert('Failed to like post');
+        if (res.ok) {
+            setIsLiked(true);
+            setPostLikes(post.likeCount ? post.likeCount + 1 : 0);
+        } else alert('Failed to like post');
         setIsLikeAnimating(false);
         likeAnimatedRef.current = false;
     };
@@ -289,7 +289,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                         <div className="post-controls">
                             <button id={`translate-post-${postIndex}`} className="control-button" style={{
                                 animation: isTranslateAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'
-                            }} title="Translate" onClick={handleTranslate}>
+                            }} title="Translate" onClick={handleTranslate} disabled={isTranslated}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -334,7 +334,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                 <div className="post-text" id={`post-text-${postIndex}`}>
                     {convertHashtagsToLinks(postText)}
                 </div>
-                <div className="post-text" id={`translated-text-${postIndex}`} style={{display: translatedText ? 'block' : 'none'}}>
+                <div className="post-text" id={`translated-text-${postIndex}`}
+                     style={{display: translatedText ? 'block' : 'none'}}>
                     {translatedFrom}
                     <br/>
                     {translatedText}
@@ -346,24 +347,27 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                 {isEmbedExternalView(embed) && <ExternalEmbed external={embed}/>}
 
                 <div className="post-actions">
-                    <a className="control-button" href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
-                       target="_blank" rel="noopener noreferrer" style={{textDecoration: 'none', color: 'inherit', display: postComment ? 'block' : 'none'}}>
+                    <a className="control-button-comment"
+                       href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
+                       target="_blank" rel="noopener noreferrer"
+                       style={{textDecoration: 'none', color: 'inherit', display: postComment ? 'block' : 'none'}}>
                         {postComment}
                     </a>
                     <button className="control-button" style={{
                         color: isLiked ? '#e0245e' : 'white',
                         animation: isLikeAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                    }} onClick={handleLike}>
+                    }} onClick={handleLike} disabled={isLiked}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? '#e0245e' : 'none'}
                              stroke="currentColor" strokeWidth="2">
-                        <path
+                            <path
                                 d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
+                        <div className="control-button-text">{postLikes}</div>
                     </button>
                     <button className="control-button" style={{
                         color: isBookmarked ? '#1d9bf0' : 'white',
                         animation: isBookmarkAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                    }} onClick={handleBookmark}>
+                    }} onClick={handleBookmark} disabled={isBookmarked}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? '#1d9bf0' : 'none'}
                              stroke="currentColor" strokeWidth="2">
                             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>

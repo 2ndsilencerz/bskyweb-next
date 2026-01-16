@@ -1,8 +1,8 @@
 'use client'
 
 import './index.css';
-import { PostCard } from "@/app/feed/postcard";
-import {JSX, useEffect, useState, useRef} from "react";
+import {PostCard} from "@/app/feed/postcard";
+import {JSX, useEffect, useRef, useState} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 export default function LoadPost(feedPath: string) {

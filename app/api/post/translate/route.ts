@@ -1,5 +1,4 @@
 import * as deepl from 'deepl-node';
-import {DeepLClient} from "deepl-node";
 
 const authKey = process.env.DEEPL_API_KEY;
 const deeplClient = new deepl.DeepLClient(authKey as string);
