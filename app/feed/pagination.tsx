@@ -26,7 +26,7 @@ export function PaginationButton() {
     };
 
     return (
-        <footer className="fixed-bottom bg-black bg-opacity-75 border-top border-secondary py-2 text-center"
+        <footer className="fixed-bottom bg-dark bg-opacity-75 border-top border-secondary py-2 text-center"
                 style={{zIndex: 1000, minHeight: '60px'}}>
             <div className="container d-flex justify-content-center align-items-center position-relative">
                 <button

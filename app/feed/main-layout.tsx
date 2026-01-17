@@ -15,12 +15,11 @@ export default async function MainLayout(title: string, children: React.ReactNod
                 </div>
                 <div className="bg-black border-bottom border-secondary min-vh-100">
                     <Header title={title}/>
-                    <div className="container mt-3 mb-5" style={{maxWidth: '600px'}}>
+                    <div className="container mt-5 mb-5 pt-3 pb-3" style={{maxWidth: '600px'}}>
                         <div id="feed">
                             {children}
                         </div>
                         <div id="error" className="error" style={{display: 'none'}}></div>
-                        <div className="load-trigger" id="load-trigger"></div>
                     </div>
                 </div>
                 <PaginationButton/>

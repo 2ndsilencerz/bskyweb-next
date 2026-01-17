@@ -4,11 +4,11 @@ import './index.css';
 import {PostCard} from "@/app/feed/postcard";
 import {JSX, useEffect, useRef, useState} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import Loading from "@/app/feed/loading";
 
 export default function LoadPost({type}: { type: string }) {
     const feedPath = type;
     const [feedPage, setFeedPage] = useState<JSX.Element>(loadingDiv());
-    const [cursor, setCursor] = useState<string>('');
     const cursorRef = useRef<string>(''); // Add this
     const [uuid, setUuid] = useState<string>('');
     const uuidRef = useRef<string>('');
@@ -36,18 +36,20 @@ export default function LoadPost({type}: { type: string }) {
             return (<></>);
         }
 
-        const newCursor = postReq.data.cursor as string;
-        setCursor(newCursor);
-        cursorRef.current = newCursor; // Keep ref in sync
+        cursorRef.current = postReq.data.cursor as string; // Keep ref in sync
 
         // console.log('Processing new page data...')
         // console.log(postReq.data.cursor);
-        const uuid = crypto.randomUUID();
+        const uuid = typeof self.crypto?.randomUUID === 'function'
+            ? self.crypto.randomUUID()
+            // eslint-disable-next-line react-hooks/purity
+            : Math.random().toString(36).substring(2, 11);
         // console.log(uuid);
         setUuid(uuid);
         uuidRef.current = uuid;
         // console.log(postReq.data.feed);
         window.dispatchEvent(new CustomEvent('load-next-page-finished'));
+        window.scrollTo({top: 0, behavior: 'smooth'});
         return constructFeedPage(postReq.data.feed);
     }
 
@@ -72,7 +74,6 @@ export default function LoadPost({type}: { type: string }) {
     }
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadNextPage('').then(res => {
             setFeedPage(res);
         });
@@ -107,9 +108,6 @@ function callPostCard(key: string, postIndex: number, post: PostView) {
 
 function loadingDiv(): JSX.Element {
     return (
-        <div id="loading" className="loading" style={{display: 'block'}}>
-            <div className="loading-spinner"></div>
-            <div>Loading posts...</div>
-        </div>
+        <Loading/>
     )
 }

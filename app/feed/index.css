@@ -6,32 +6,3 @@
         opacity: 0.3;
     }
 }
-
-.loading {
-    text-align: center;
-    padding: 30px;
-    color: #8899a6;
-}
-
-.loading-spinner {
-    border: 3px solid #38444d;
-    border-top: 3px solid #1da1f2;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 10px;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-.load-trigger {
-    height: 1px;
-}

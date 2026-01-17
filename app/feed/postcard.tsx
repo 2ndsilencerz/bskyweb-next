@@ -257,8 +257,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
-            <div className="card bg-black border-secondary text-white rounded-3 overflow-hidden"
-                 style={{minWidth: '100%', maxWidth: '600px'}}>
+            <div className="card bg-dark bg-opacity-75 border-secondary text-white rounded-3 overflow-hidden">
                 <div className="card-body p-3">
                     <div className="d-flex align-items-start">
                         {/* Avatar */}
@@ -277,7 +276,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                         </a>
 
                         {/* Content Area */}
-                        <div className="grow">
+                        <div className="overflow-hidden">
                             <div className="d-flex justify-content-between align-items-start">
                                 <div>
                                     <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
@@ -347,7 +346,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             <div className="mt-2 small lh-base text-break">
                                 {convertHashtagsToLinks(postText)}
                                 {translatedText && (
-                                    <div className="mt-2 p-2 bg-black rounded border-secondary">
+                                    <div className="mt-2 p-2 bg-dark bg-opacity-75 rounded border-secondary">
                                         <em className="x-small text-secondary">{translatedFrom}</em><br/>
                                         {translatedText}
                                     </div>
@@ -388,7 +387,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     onClick={handleBookmark} disabled={isBookmarked}
                                     style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
                                     <svg width="15" height="15" viewBox="0 0 24 24"
-                                         fill={isBookmarked ? '#99CCFF' : 'none'} stroke='#66B2FF' strokeWidth="3">
+                                         fill={isBookmarked ? '#99CCFF' : 'none'} stroke='#99CCFF' strokeWidth="3">
                                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                                     </svg>
                                 </button>
@@ -403,7 +402,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
 function ConstructImage({view, nsfw}: { view: EmbedImagesView, nsfw: boolean }) {
     return (
-        <div className="post-images">
+        <div>
             {view.images.map((image, idx) => (
                 <ImageTemplate key={idx} image={image} nsfw={nsfw}/>
             ))}
@@ -420,13 +419,10 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             src={image.fullsize}
             width={width}
             height={height}
+            preload={true}
             loading="eager"
             alt={image.alt || ''}
-            style={{
-                width: "100%", height: "100%", borderRadius: "8px",
-                filter: blurred ? "blur(20px)" : "none",
-                cursor: blurred ? "pointer" : "default"
-            }}
+            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'}`}
             onClick={() => setBlurred(false)}
         />
     );
@@ -439,11 +435,7 @@ function VideoTemplate({video, nsfw}: { video: string, nsfw: boolean }) {
         <video
             src={video}
             controls
-            style={{
-                width: "100%", height: "auto", borderRadius: "8px",
-                filter: blurred ? "blur(20px)" : "none",
-                cursor: blurred ? "pointer" : "default"
-            }}
+            className={`rounded-3 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'}`}
             onClick={() => setBlurred(false)}
         />
     );
@@ -455,16 +447,7 @@ function ExternalEmbed({external}: { external: EmbedExternalView }) {
             href={external.external.uri}
             target="_blank"
             rel="noopener noreferrer"
-            className="external-link-preview"
-            style={{
-                display: "block",
-                marginTop: "12px",
-                border: "1px solid #e1e8ed",
-                borderRadius: "12px",
-                overflow: "hidden",
-                textDecoration: "none",
-                color: "inherit"
-            }}
+            className="d-block rounded-3 text-decoration-none text-white"
         >
             {external.external.thumb && (
                 <Image
@@ -472,21 +455,21 @@ function ExternalEmbed({external}: { external: EmbedExternalView }) {
                     loading="eager"
                     width="500"
                     height="200"
-                    style={{objectFit: "scale-down"}}
                     alt={external.external.title || ''}
                 />
             )}
-            <div style={{padding: "12px"}}>
-                <div style={{fontSize: "15px", fontWeight: "600", color: "white", marginBottom: "4px"}}>
+            <div className="p-3">
+                <div className="fw-semibold text-white mb-2 fs-6">
                     {external.external.title || ''}
                 </div>
-                <div style={{fontSize: "14px", color: "#536471", marginBottom: "4px"}}>
+                <div className="text-secondary mb-2" style={{fontSize: "0.875rem"}}>
                     {external.external.description.length > 100 ?
                         external.external.description.substring(0, 100) + '...' :
                         external.external.description || ''}
                 </div>
-                <div style={{fontSize: "13px", color: "#536471"}}>
-                    🔗 {new URL(external.external.uri).hostname}
+                <div className="text-secondary small d-flex align-items-center gap-1">
+                    <span>🔗</span>
+                    <span className="text-truncate">{new URL(external.external.uri).hostname}</span>
                 </div>
             </div>
         </a>
