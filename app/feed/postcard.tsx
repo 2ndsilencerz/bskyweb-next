@@ -79,6 +79,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const [translatedFrom, setTranslatedFrom] = useState('');
     const translatedFromRef = useRef('');
     const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
+    const animationTemplate = 'flash 0.3s ease-in-out infinite';
     // useEffect(() => {
     //     if (isLikeAnimating) {
     //         const timer = setTimeout(() => {
@@ -255,124 +256,103 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     };
 
     return (
-        <div className="post-card" id={`post-${postIndex}`}>
-            <div className="post-header">
-                {/* ... avatar code ... */}
-                <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
-                   rel="noopener noreferrer">
-                    <div className="post-avatar" style={authorAvatar ? {background: 'none'} : {}}>
-                        {authorAvatar ? (
-                            <Image src={authorAvatar}
-                                   width={48}
-                                   height={48}
-                                   style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}}
-                                   alt={`${authorHandle}-avatar`}/>
-                        ) : (
-                            <span>{initials}</span>
-                        )}
-                    </div>
-                </a>
-                <div className="post-info">
-                    <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
-                        <div>
-                            <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
-                               rel="noopener noreferrer" style={{color: 'white', textDecoration: 'unset'}}>
-                                <span className="post-author">{authorDisplayName}</span>
-                            </a>
-                            <br/>
-                            <span className="post-handle">@{authorHandle}</span>
-                            <a href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
-                               target="_blank" rel="noopener noreferrer" style={{textDecoration: 'unset'}}>
-                                <span className="post-time">· {timeAgoText}</span>
-                            </a>
-                        </div>
-                        <div className="post-controls">
-                            <button id={`translate-post-${postIndex}`} className="control-button" style={{
-                                animation: isTranslateAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'
-                            }} title="Translate" onClick={handleTranslate} disabled={isTranslated}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path
-                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                </svg>
-                            </button>
-                            <button id={`mute-author-${postIndex}`} className="control-button" style={{
-                                animation: isMuteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                            }} title="Mute Author" onClick={handleMuteAuthor}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                    <line x1="23" y1="9" x2="17" y2="15"></line>
-                                    <line x1="17" y1="9" x2="23" y2="15"></line>
-                                </svg>
-                            </button>
-                            <button id={`block-author-${postIndex}`} className="control-button" style={{
-                                animation: isBlockAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                            }} title="Block Author" onClick={handleBlockAuthor}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                                </svg>
-                            </button>
-                            <button id={`delete-post-${postIndex}`} className="control-button" style={{
-                                animation: isDeleteAnimating ? 'flash 0.3s ease-in-out infinite' : 'none'
-                            }} title="Delete" onClick={handleMutePost}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="post-content">
-                <div className="post-text" id={`post-text-${postIndex}`}>
-                    {convertHashtagsToLinks(postText)}
-                </div>
-                <div className="post-text" id={`translated-text-${postIndex}`}
-                     style={{display: translatedText ? 'block' : 'none'}}>
-                    {translatedFrom}
-                    <br/>
-                    {translatedText}
-                </div>
-                {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
-                {post.embed?.$type === 'app.bsky.embed.video#view' && (
-                    <VideoTemplate video={(post.embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>
-                )}
-                {isEmbedExternalView(embed) && <ExternalEmbed external={embed}/>}
+        <div id={`post-${postIndex}`} className="mb-2">
+            <div className="card bg-black border-secondary text-white rounded-3 overflow-hidden" style={{ minWidth: '100%', maxWidth: '600px' }}>
+                <div className="card-body p-3">
+                    <div className="d-flex align-items-start">
+                        {/* Avatar */}
+                        <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer" className="me-3 shrink-0">
+                            <div className="rounded-circle d-flex align-items-center justify-content-center overflow-hidden bg-primary" 
+                                 style={{ width: '48px', height: '48px' }}>
+                                {authorAvatar ? (
+                                    <Image src={authorAvatar} width={48} height={48} className="object-fit-cover w-100 h-100" alt="avatar"/>
+                                ) : (
+                                    <span className="fw-bold fs-5 text-white">{initials}</span>
+                                )}
+                            </div>
+                        </a>
 
-                <div className="post-actions">
-                    <a className="control-button-comment"
-                       href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
-                       target="_blank" rel="noopener noreferrer"
-                       style={{textDecoration: 'none', color: 'inherit', display: postComment ? 'block' : 'none'}}>
-                        {postComment}
-                    </a>
-                    <button className="control-button" style={{
-                        color: isLiked ? '#e0245e' : 'white',
-                        animation: isLikeAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                    }} onClick={handleLike} disabled={isLiked}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? '#e0245e' : 'none'}
-                             stroke="currentColor" strokeWidth="2">
-                            <path
-                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <div className="control-button-text">{postLikes}</div>
-                    </button>
-                    <button className="control-button" style={{
-                        color: isBookmarked ? '#1d9bf0' : 'white',
-                        animation: isBookmarkAnimating ? 'flash 0.3s ease-in-out infinite' : 'none',
-                    }} onClick={handleBookmark} disabled={isBookmarked}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? '#1d9bf0' : 'none'}
-                             stroke="currentColor" strokeWidth="2">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                    </button>
+                        {/* Content Area */}
+                        <div className="grow">
+                            <div className="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer" className="text-white text-decoration-none fw-bold small">
+                                        {authorDisplayName}
+                                    </a>
+                                    <div className="text-secondary small">
+                                        @{authorHandle}
+                                        <a href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank" rel="noopener noreferrer" className="text-secondary text-decoration-none ms-1">
+                                            · {timeAgoText}
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                {/* Controls */}
+                                <div className="btn-group btn-group-sm rounded-pill">
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleTranslate} disabled={isTranslated}
+                                            title="Translate" style={{animation: isTranslateAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                    </button>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleMuteAuthor}
+                                            title="Mute Author" style={{animation: isMuteAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                                    </button>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleBlockAuthor}
+                                            title="Block Author" style={{animation: isBlockAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                    </button>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleMutePost}
+                                            title="Delete" style={{animation: isDeleteAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Post Body */}
+                            <div className="mt-2 small lh-base text-break">
+                                {convertHashtagsToLinks(postText)}
+                                {translatedText && (
+                                    <div className="mt-2 p-2 bg-black rounded border-secondary">
+                                        <em className="x-small text-secondary">{translatedFrom}</em><br/>
+                                        {translatedText}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Embeds (Images/Video) */}
+                            <div className="mt-2 rounded-3 overflow-hidden border border-secondary">
+                                {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
+                                {post.embed?.$type === 'app.bsky.embed.video#view' && (
+                                    <VideoTemplate video={(post.embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>
+                                )}
+                                {isEmbedExternalView(embed) && <ExternalEmbed external={embed}/>}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="d-flex justify-content-end mt-3 gap-2 min-h-8">
+                                <a className={`btn btn-sm rounded-pill px-3 border-secondary text-white border-gray-700 ${postComment ? 'd-block btn-outline-secondary' : 'd-none'}`}
+                                   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank" rel="noopener noreferrer">
+                                    {postComment}
+                                </a>
+                                <button className={`btn btn-sm rounded-pill px-3 border-secondary ${isLiked ? 'btn-danger border-danger' : 'btn-outline-secondary text-white'}`}
+                                        style={{
+                                            animation: isLikeAnimating ? animationTemplate : ''
+                                        }}
+                                        onClick={handleLike} disabled={isLiked}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isLiked ? 'red' : 'none'} stroke="currentColor" strokeWidth="3">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                    {/*{postLikes}*/}
+                                </button>
+                                <button className={`btn btn-sm rounded-pill px-3 border-secondary ${isBookmarked ? 'btn-info border-info text-black' : 'btn-outline-secondary text-white'}`} 
+                                        onClick={handleBookmark} disabled={isBookmarked} style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isBookmarked ? 'blue' : 'none'} stroke="currentColor" strokeWidth="3">
+                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -401,7 +381,7 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             loading="eager"
             alt={image.alt || ''}
             style={{
-                width: "100%", height: "100%", borderRadius: "8px", marginTop: "10px",
+                width: "100%", height: "100%", borderRadius: "8px",
                 filter: blurred ? "blur(20px)" : "none",
                 cursor: blurred ? "pointer" : "default"
             }}

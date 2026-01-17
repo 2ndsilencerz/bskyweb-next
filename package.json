@@ -17,7 +17,8 @@
     "@atproto/lexicon": "^0.2.2",
     "@atproto/repo": "^0.3.2",
     "@atproto/syntax": "^0.1.2",
-    "deepl-node": "^1.24.0"
+    "deepl-node": "^1.24.0",
+    "bootstrap": "^5.3.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

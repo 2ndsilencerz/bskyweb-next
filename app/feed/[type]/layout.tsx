@@ -1,6 +1,8 @@
 import type {Metadata} from "next";
 import "@/app/globals.css";
 import MainLayout from "@/app/feed/main-layout";
+import "bootstrap/dist/css/bootstrap.min.css"
+import "@/app/feed/index.css"
 
 export const metadata: Metadata = {
     title: "Bsky Feed For You",
