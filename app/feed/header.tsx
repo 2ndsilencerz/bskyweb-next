@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import {notification} from "@/lib/notification";
 
-export default function Header({title = "Bsky Feed"}: { title?: string }) {
+export default async function Header() {
+    const hasNotification = await notification();
     const userHandle = "chrome199523.bsky.social";
     return (
         <nav
@@ -10,11 +12,30 @@ export default function Header({title = "Bsky Feed"}: { title?: string }) {
             <div className="container-fluid d-flex align-items-center">
                 <a className="navbar-brand me-3" href={`https://bsky.app/profile/${userHandle}`} target="_blank"
                    rel="noopener noreferrer">
-                    <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
-                           width={32} height={32}/>
+                    <div className="position-relative">
+                        <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
+                               width={32} height={32}/>
+                        {hasNotification && (
+                            <span
+                                className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                <span className="visually-hidden">New notifications</span>
+                            </span>
+                        )}
+                    </div>
                 </a>
 
                 <div className="d-flex overflow-auto align-items-center">
+                    <Link href="/feed/following" className="nav-link p-0 me-3 d-flex align-items-center">
+                        <Image
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Crect width='28' height='28' fill='%23666'/%3E%3C/svg%3E"
+                            alt="following icon"
+                            width={28}
+                            height={28}
+                            className="rounded-circle border border-secondary">
+                        </Image>
+                        <span className="ms-2 text-white fw-bold d-none d-sm-inline">Following</span>
+                    </Link>
+
                     <Link href="/feed/foryou" className="nav-link p-0 me-3 d-flex align-items-center">
                         <Image
                             src="https://cdn.bsky.app/img/avatar_thumbnail/plain/did:plc:3guzzweuqraryl3rdkimjamk/bafkreicqcrfqgt7v4ghdwwwoaom73la7yomvyfeg3irpttf45x2flftmx4@jpeg"
@@ -23,7 +44,7 @@ export default function Header({title = "Bsky Feed"}: { title?: string }) {
                             height={28}
                             className="rounded-circle border border-secondary">
                         </Image>
-                        <span className="ms-2 text-white fw-bold d-none d-sm-inline">{title}</span>
+                        <span className="ms-2 text-white fw-bold d-none d-sm-inline">For You</span>
                     </Link>
 
                     <Link href="/feed/wuwa" className="nav-link p-0 me-3 d-flex align-items-center">

@@ -51,7 +51,10 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
         muteLists = await getMuteList();
 
         let feedUrl = '';
-        if (type && type === 'foryou') {
+        let isTimeline = false;
+        if (type && type === 'following') {
+            isTimeline = true;
+        } else if (type && type === 'foryou') {
             feedUrl = `at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you`;
         } else if (type && type === 'wuwa') {
             feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/wuwa-cf`
@@ -67,14 +70,26 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const feedReq: FeedRequest = {
-                    feed: feedUrl,
+                    feed: !isTimeline ? feedUrl : '',
                     limit: postPerPageLimit,
                     cursor: cursor != 'x' ? cursor : '',
                 }
-                const feedRes = await agent.app.bsky.feed.getFeed(feedReq).catch(error => {
-                    console.error(`Attempt ${attempt} failed:`, error);
-                    return false;
-                }).then(res => res) as AppBskyFeedGetFeed.Response;
+
+                let feedRes;
+                if (isTimeline) {
+                    feedRes = await agent.app.bsky.feed.getTimeline({
+                        limit: 20,
+                        cursor: cursor != 'x' ? cursor : ''
+                    }).catch(error => {
+                        console.error(`Attempt ${attempt} failed:`, error);
+                        return false;
+                    }).then(res => res) as AppBskyFeedGetFeed.Response;
+                } else {
+                    feedRes = await agent.app.bsky.feed.getFeed(feedReq).catch(error => {
+                        console.error(`Attempt ${attempt} failed:`, error);
+                        return false;
+                    }).then(res => res) as AppBskyFeedGetFeed.Response;
+                }
 
                 if (!feedRes) return false;
 
@@ -95,10 +110,10 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                         } else if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
                             imageExist = !(embed.images == null || embed.images.length == 0);
-                        } else if (isEmbedVideoView(post.post.embed) || isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media)) {
+                        } else if (isEmbedVideoView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media))) {
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedVideoView;
                             videoExist = !(embed.playlist == null || embed.playlist.length == 0);
-                        } else if (isEmbedExternalView(post.post.embed) || isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media)) {
+                        } else if (isEmbedExternalView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media))) {
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
                             externalExist = !(embed.external.uri == null || embed.external.uri == '');
                         }
@@ -107,13 +122,13 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                     }
 
                     if (!imageExist && !videoExist && !externalExist) {
-                        let msg = ``
-                        if (!imageExist && !videoExist && !externalExist) {
-                            msg = `Removing post ${post.post.uri} due to missing embed`
-                        } else {
-                            msg = `Removing post ${post.post.uri} due to blacklisted word`
-                        }
-                        console.log(msg);
+                        // let msg = ``
+                        // if (!imageExist && !videoExist && !externalExist) {
+                        //     msg = `Removing post ${post.post.uri} due to missing embed`
+                        // } else {
+                        //     msg = `Removing post ${post.post.uri} due to blacklisted word`
+                        // }
+                        // console.log(msg);
                         return false;
                     }
                     return true;

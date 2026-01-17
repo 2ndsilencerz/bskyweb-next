@@ -31,8 +31,8 @@ export function startBackgroundFetcherScheduler() {
     // Initial load
     getBackground().then().catch(e => console.error(`Error loading: ${e}`));
 
-    // Schedule periodic updates (every 10 minute)
+    // Schedule periodic updates (every 1 hour)
     setInterval(async () => {
         getBackground().then().catch(e => console.error(`Error loading: ${e}`));
-    }, 60 * 1000);
+    }, 60 * 60 * 1000);
 }

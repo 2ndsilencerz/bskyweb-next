@@ -4,9 +4,11 @@ export async function register() {
         const {startBlocklistScheduler} = await import('@/lib/blocklist');
         const {startMuteListScheduler} = await import('@/lib/mutelist');
         const {startBackgroundFetcherScheduler} = await import('@/lib/background');
+        const {startNotificationScheduler} = await import('@/lib/notification');
         startBlacklistScheduler();
         startBlocklistScheduler();
         startMuteListScheduler();
         startBackgroundFetcherScheduler();
+        startNotificationScheduler();
     }
 }

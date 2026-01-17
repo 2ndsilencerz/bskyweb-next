@@ -58,6 +58,18 @@ export function startBlacklistScheduler() {
     }, 600 * 1000);
 }
 
+export function addBlacklist(word: string) {
+    cachedBlacklist.push(word.toLowerCase());
+    getBlacklistFromBsky().finally(() =>
+        console.log(`Blacklist updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`));
+}
+
+export function removeBlacklist(word: string) {
+    cachedBlacklist = cachedBlacklist.filter(w => w.toLowerCase() !== word.toLowerCase());
+    getBlacklistFromBsky().finally(() =>
+        console.log(`Blacklist updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`));
+}
+
 export function getBlacklist(): string[] {
     const now = Date.now();
     if (now - lastLoaded > CACHE_TTL_LOCAL) {

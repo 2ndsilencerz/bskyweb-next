@@ -25,10 +25,50 @@ export function PaginationButton() {
         window.dispatchEvent(new CustomEvent('load-next-page'));
     };
 
+    const handleSubmit = () => {
+        const input = document.getElementById('blacklist-input') as HTMLInputElement;
+        if (input && input.value.trim()) {
+            fetch(`/api/moderation/mute`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'word': encodeURIComponent(input.value.trim())
+                },
+                body: JSON.stringify({
+                    uri: input.value.trim()
+                })
+            }).then((res) => {
+                if (!res.ok) return;
+                console.log(`Success`);
+                input.value = '';
+            });
+        }
+    };
+
     return (
         <footer className="fixed-bottom bg-dark bg-opacity-75 border-top border-secondary py-2 text-center"
                 style={{zIndex: 1000, minHeight: '60px'}}>
-            <div className="container d-flex justify-content-center align-items-center position-relative">
+            <div className="container d-flex justify-content-between align-items-center position-relative">
+                <div className="d-none d-sm-flex align-items-center gap-2">
+                    <input
+                        type="text"
+                        className="form-control form-control-sm bg-dark text-light border-secondary"
+                        placeholder="Enter text..."
+                        style={{maxWidth: '200px'}}
+                        id="blacklist-input"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSubmit();
+                            }
+                        }}
+                    />
+                    <button
+                        className="btn btn-outline-light btn-sm border-secondary rounded-pill px-3"
+                        onClick={handleSubmit}
+                    >
+                        Submit
+                    </button>
+                </div>
                 <button
                     className="btn btn-outline-light border-secondary rounded-pill px-4 d-flex align-items-center"
                     id="next-page-bottom"
@@ -48,7 +88,7 @@ export function PaginationButton() {
                 <a
                     href={copyrightLink}
                     target="_blank"
-                    className="nav-link p-0 position-absolute end-0 me-3 d-none d-sm-flex align-items-center text-end"
+                    className="nav-link p-0 d-none d-sm-flex align-items-center text-end"
                     rel="noopener noreferrer"
                     style={{color: 'white', fontSize: '0.7rem', maxWidth: '30%'}}
                 >

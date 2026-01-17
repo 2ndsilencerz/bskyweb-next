@@ -19,7 +19,6 @@ export default function LoadPost({type}: { type: string }) {
             ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
             : `/api/posts/${feedPath}/`;
 
-
         const res = await fetch(url, {
             method: 'GET',
             headers: {
@@ -37,6 +36,7 @@ export default function LoadPost({type}: { type: string }) {
         }
 
         cursorRef.current = postReq.data.cursor as string; // Keep ref in sync
+        if (postReq.data.feed.length === 0) return await loadNextPage(cursorRef.current);
 
         // console.log('Processing new page data...')
         // console.log(postReq.data.cursor);

@@ -78,6 +78,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const translatedTextRef = useRef('');
     const [translatedFrom, setTranslatedFrom] = useState('');
     const translatedFromRef = useRef('');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
     const animationTemplate = 'flash 0.3s ease-in-out infinite';
     // useEffect(() => {
@@ -346,7 +347,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             <div className="mt-2 small lh-base text-break">
                                 {convertHashtagsToLinks(postText)}
                                 {translatedText && (
-                                    <div className="mt-2 p-2 bg-dark bg-opacity-75 rounded border-secondary">
+                                    <div className="mt-2 p-2 bg-dark bg-opacity-25 rounded border-secondary">
                                         <em className="x-small text-secondary">{translatedFrom}</em><br/>
                                         {translatedText}
                                     </div>
