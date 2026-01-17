@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
                 protocol: 'https',
                 hostname: 'cdn.bsky.app',
                 port: '',
+            },
+            {
+                protocol: 'https',
+                hostname: 'bing.com',
             }
         ],
     },

@@ -5,8 +5,9 @@ import {PostCard} from "@/app/feed/postcard";
 import {JSX, useEffect, useRef, useState} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
-export default function LoadPost(feedPath: string) {
-    const [feedPage, setFeedPage] = useState<JSX.Element>();
+export default function LoadPost({type}: { type: string }) {
+    const feedPath = type;
+    const [feedPage, setFeedPage] = useState<JSX.Element>(loadingDiv());
     const [cursor, setCursor] = useState<string>('');
     const cursorRef = useRef<string>(''); // Add this
     const [uuid, setUuid] = useState<string>('');
@@ -71,7 +72,7 @@ export default function LoadPost(feedPath: string) {
     }
 
     useEffect(() => {
-        setFeedPage(loadingDiv());
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadNextPage('').then(res => {
             setFeedPage(res);
         });

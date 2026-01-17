@@ -78,7 +78,7 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
 
                 if (!feedRes) return false;
 
-                console.log(`Feed: ${JSON.stringify(feedRes)}`)
+                // console.log(`Feed: ${JSON.stringify(feedRes)}`)
                 feedRes.data.feed = feedRes.data.feed.filter((post) => {
                     let embed;
                     let imageExist, videoExist, externalExist;

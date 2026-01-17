@@ -257,15 +257,19 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
-            <div className="card bg-black border-secondary text-white rounded-3 overflow-hidden" style={{ minWidth: '100%', maxWidth: '600px' }}>
+            <div className="card bg-black border-secondary text-white rounded-3 overflow-hidden"
+                 style={{minWidth: '100%', maxWidth: '600px'}}>
                 <div className="card-body p-3">
                     <div className="d-flex align-items-start">
                         {/* Avatar */}
-                        <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer" className="me-3 shrink-0">
-                            <div className="rounded-circle d-flex align-items-center justify-content-center overflow-hidden bg-primary" 
-                                 style={{ width: '48px', height: '48px' }}>
+                        <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer"
+                           className="me-3 shrink-0">
+                            <div
+                                className="rounded-circle d-flex align-items-center justify-content-center overflow-hidden bg-primary"
+                                style={{width: '48px', height: '48px'}}>
                                 {authorAvatar ? (
-                                    <Image src={authorAvatar} width={48} height={48} className="object-fit-cover w-100 h-100" alt="avatar"/>
+                                    <Image src={authorAvatar} width={48} height={48}
+                                           className="object-fit-cover w-100 h-100" alt="avatar"/>
                                 ) : (
                                     <span className="fw-bold fs-5 text-white">{initials}</span>
                                 )}
@@ -276,34 +280,65 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                         <div className="grow">
                             <div className="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer" className="text-white text-decoration-none fw-bold small">
+                                    <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="text-white text-decoration-none fw-bold small">
                                         {authorDisplayName}
                                     </a>
                                     <div className="text-secondary small">
                                         @{authorHandle}
-                                        <a href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank" rel="noopener noreferrer" className="text-secondary text-decoration-none ms-1">
+                                        <a href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
+                                           target="_blank" rel="noopener noreferrer"
+                                           className="text-secondary text-decoration-none ms-1">
                                             · {timeAgoText}
                                         </a>
                                     </div>
                                 </div>
-                                
+
                                 {/* Controls */}
-                                <div className="btn-group btn-group-sm rounded-pill">
-                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleTranslate} disabled={isTranslated}
-                                            title="Translate" style={{animation: isTranslateAnimating ? animationTemplate : ''}}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                <div className="btn-group btn-group-sm">
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1"
+                                            onClick={handleTranslate} disabled={isTranslated}
+                                            title="Translate"
+                                            style={{animation: isTranslateAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="2" y1="12" x2="22" y2="12"/>
+                                            <path
+                                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                        </svg>
                                     </button>
-                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleMuteAuthor}
-                                            title="Mute Author" style={{animation: isMuteAnimating ? animationTemplate : ''}}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1"
+                                            onClick={handleMuteAuthor}
+                                            title="Mute Author"
+                                            style={{animation: isMuteAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" strokeWidth="2">
+                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                            <line x1="23" y1="9" x2="17" y2="15"/>
+                                            <line x1="17" y1="9" x2="23" y2="15"/>
+                                        </svg>
                                     </button>
-                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleBlockAuthor}
-                                            title="Block Author" style={{animation: isBlockAnimating ? animationTemplate : ''}}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1"
+                                            onClick={handleBlockAuthor}
+                                            title="Block Author"
+                                            style={{animation: isBlockAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                        </svg>
                                     </button>
-                                    <button className="btn btn-outline-secondary border-0 text-white p-1" onClick={handleMutePost}
-                                            title="Delete" style={{animation: isDeleteAnimating ? animationTemplate : ''}}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    <button className="btn btn-outline-secondary border-0 text-white p-1"
+                                            onClick={handleMutePost}
+                                            title="Delete"
+                                            style={{animation: isDeleteAnimating ? animationTemplate : ''}}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" strokeWidth="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"/>
+                                            <line x1="6" y1="6" x2="18" y2="18"/>
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
@@ -331,22 +366,29 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             {/* Actions */}
                             <div className="d-flex justify-content-end mt-3 gap-2 min-h-8">
                                 <a className={`btn btn-sm rounded-pill px-3 border-secondary text-white border-gray-700 ${postComment ? 'd-block btn-outline-secondary' : 'd-none'}`}
-                                   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank" rel="noopener noreferrer">
+                                   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank"
+                                   rel="noopener noreferrer">
                                     {postComment}
                                 </a>
-                                <button className={`btn btn-sm rounded-pill px-3 border-secondary ${isLiked ? 'btn-danger border-danger' : 'btn-outline-secondary text-white'}`}
-                                        style={{
-                                            animation: isLikeAnimating ? animationTemplate : ''
-                                        }}
-                                        onClick={handleLike} disabled={isLiked}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isLiked ? 'red' : 'none'} stroke="currentColor" strokeWidth="3">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                <button
+                                    className={`btn btn-sm rounded-pill px-3 border-secondary ${isLiked ? 'border-danger' : 'btn-outline-secondary text-white'}`}
+                                    style={{
+                                        animation: isLikeAnimating ? animationTemplate : ''
+                                    }}
+                                    onClick={handleLike} disabled={isLiked}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill={isLiked ? '#FF007F' : 'none'}
+                                         stroke='#FF007F' strokeWidth="3">
+                                        <path
+                                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                     </svg>
                                     {/*{postLikes}*/}
                                 </button>
-                                <button className={`btn btn-sm rounded-pill px-3 border-secondary ${isBookmarked ? 'btn-info border-info text-black' : 'btn-outline-secondary text-white'}`} 
-                                        onClick={handleBookmark} disabled={isBookmarked} style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isBookmarked ? 'blue' : 'none'} stroke="currentColor" strokeWidth="3">
+                                <button
+                                    className={`btn btn-sm rounded-pill px-3 border-secondary ${isBookmarked ? 'border-info text-black' : 'btn-outline-secondary text-white'}`}
+                                    onClick={handleBookmark} disabled={isBookmarked}
+                                    style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24"
+                                         fill={isBookmarked ? '#99CCFF' : 'none'} stroke='#66B2FF' strokeWidth="3">
                                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                                     </svg>
                                 </button>
@@ -398,7 +440,7 @@ function VideoTemplate({video, nsfw}: { video: string, nsfw: boolean }) {
             src={video}
             controls
             style={{
-                width: "100%", height: "auto", borderRadius: "8px", marginTop: "10px",
+                width: "100%", height: "auto", borderRadius: "8px",
                 filter: blurred ? "blur(20px)" : "none",
                 cursor: blurred ? "pointer" : "default"
             }}

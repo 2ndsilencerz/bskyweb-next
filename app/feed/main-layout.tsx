@@ -1,28 +1,30 @@
 import Image from "next/image";
 import {PaginationButton} from "@/app/feed/pagination";
 import Header from "@/app/feed/header";
+import getBackground from "@/lib/background";
 
-export default function MainLayout(title: string, children: React.ReactNode) {
-
+export default async function MainLayout(title: string, children: React.ReactNode) {
+    const bgImage = await getBackground();
     return (
         <>
-            <div className="bg-black border-bottom border-secondary min-vh-100">
-            {Header(title)}
-                <div className="container mt-3 mb-5" style={{ maxWidth: '600px' }}>
-                    <div id="feed">
-                        {children}
+            <div>
+                <div className="fixed-top vw-100 vh-100 z-0">
+                    <div className="bg-black bg-opacity-25 vw-100 vh-100">
+                        <Image src={bgImage[0]} alt="bgImage" layout="fill" className="z-n1 object-fit-cover"/>
                     </div>
-                    {/*<div id="loading" className="loading" style={{display: 'none'}}>*/}
-                    {/*    <div className="loading-spinner"></div>*/}
-                    {/*    <div>Loading posts...</div>*/}
-                    {/*</div>*/}
-                    <div id="error" className="error" style={{display: 'none'}}></div>
-                    <div className="load-trigger" id="load-trigger"></div>
                 </div>
+                <div className="bg-black border-bottom border-secondary min-vh-100">
+                    <Header title={title}/>
+                    <div className="container mt-3 mb-5" style={{maxWidth: '600px'}}>
+                        <div id="feed">
+                            {children}
+                        </div>
+                        <div id="error" className="error" style={{display: 'none'}}></div>
+                        <div className="load-trigger" id="load-trigger"></div>
+                    </div>
+                </div>
+                <PaginationButton/>
             </div>
-            {/*<Script src="/index.js" strategy="afterInteractive"/>*/}
-            {/*<Script src="/feed.js" strategy="afterInteractive"/>*/}
-            <PaginationButton/>
         </>
     )
 }
