@@ -51,8 +51,12 @@ export default function LoadPost({type}: { type: string }) {
         window.dispatchEvent(new CustomEvent('load-next-page-finished'));
         window.scrollTo({top: 0, behavior: 'smooth'});
         fetch('/api/profile/notification').then(res => res.json()).then(notification => {
-            if (notification) document.getElementById('notification-badge')?.classList.remove('hidden');
-            else document.getElementById('notification-badge')?.classList.add('hidden');
+            console.log(notification.notifications ? `New notifications available` : `No new notifications`);
+            if (notification.notifications) {
+                document.getElementById('notification-badge')?.attributeStyleMap.set('display', 'block');
+            } else {
+                document.getElementById('notification-badge')?.attributeStyleMap.set('display', 'none');
+            }
         });
         return constructFeedPage(postReq.data.feed);
     }

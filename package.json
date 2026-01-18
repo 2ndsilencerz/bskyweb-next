@@ -9,16 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
     "@atproto/api": "^0.18.9",
     "@atproto/identity": "^0.2.1",
     "@atproto/lexicon": "^0.2.2",
     "@atproto/repo": "^0.3.2",
     "@atproto/syntax": "^0.1.2",
+    "bootstrap": "^5.3.8",
     "deepl-node": "^1.24.0",
-    "bootstrap": "^5.3.8"
+    "next": "16.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

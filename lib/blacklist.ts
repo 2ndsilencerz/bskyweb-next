@@ -90,6 +90,10 @@ export function getBlacklist(): string[] {
     return cachedBlacklist;
 }
 
+export function getDictionary(): string[] {
+    return cachedDictionary;
+}
+
 export async function getBlacklistFromBsky(): Promise<void> {
     const agent = await getAgent();
     const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);

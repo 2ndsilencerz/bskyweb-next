@@ -14,7 +14,7 @@ import {
     isView as isMediaView,
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
-import {getBlacklist} from "@/lib/blacklist";
+import {getBlacklist, getDictionary} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
 
@@ -103,9 +103,13 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                         } else if (post.post.viewer?.threadMuted) {
                             console.log(`Post ${post.post.uri} is muted`);
                             return false;
-                        } else if (post.post.record && post.post.record.text && checkBlacklist(post.post.record.text as string)) {
+                        } else if (post.post.record && post.post.record.text &&
+                            checkBlacklist(post.post.record.text as string) &&
+                            !checkDictionary(post.post.record.text as string)) {
                             return false;
-                        } else if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
+                        }
+
+                        if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
                             imageExist = !(embed.images == null || embed.images.length == 0);
                         } else if (isEmbedVideoView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media))) {
@@ -167,5 +171,18 @@ function checkBlocklist(did: string) {
 function checkMuteList(did: string) {
     const result = muteLists.some(word => word.includes(did.toLowerCase()));
     if (result) console.log(`From ${muteLists.length} Muted account found: ${did}`);
+    return result;
+}
+
+function checkDictionary(text: string) {
+    const dictionary = getDictionary();
+    const matchedDictionaryTerms: string[] = [];
+    for (const tag of dictionary) {
+        if (text.toLowerCase().includes(tag.toLowerCase())) {
+            matchedDictionaryTerms.push(tag);
+        }
+    }
+    const result = matchedDictionaryTerms.length > 0;
+    if (result) console.log(`From ${dictionary.length} Dictionary word found: ${matchedDictionaryTerms.join(', ')}`);
     return result;
 }
