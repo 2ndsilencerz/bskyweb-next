@@ -82,12 +82,10 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                         cursor: cursor != 'x' ? cursor : ''
                     }).catch(error => {
                         console.error(`Attempt ${attempt} failed:`, error);
-                        return false;
                     }).then(res => res) as AppBskyFeedGetFeed.Response;
                 } else {
                     feedRes = await agent.app.bsky.feed.getFeed(feedReq).catch(error => {
                         console.error(`Attempt ${attempt} failed:`, error);
-                        return false;
                     }).then(res => res) as AppBskyFeedGetFeed.Response;
                 }
 
@@ -115,7 +113,7 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                             videoExist = !(embed.playlist == null || embed.playlist.length == 0);
                         } else if (isEmbedExternalView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media))) {
                             embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
-                            externalExist = !(embed.external.uri == null || embed.external.uri == '');
+                            externalExist = !(embed.external?.uri == undefined || embed.external.uri == '');
                         }
                     } catch (error) {
                         console.error(error);

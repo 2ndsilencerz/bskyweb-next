@@ -14,6 +14,7 @@ interface ListData {
 const LIST_FILE_PATH = path.join(process.cwd(), 'list.json');
 
 let cachedBlacklist: string[] = [];
+let cachedDictionary: string[] = [];
 let lastLoaded: number = 0;
 const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
 
@@ -75,7 +76,7 @@ export function getBlacklist(): string[] {
     if (now - lastLoaded > CACHE_TTL_LOCAL) {
         try {
             getBlacklistFromLocal();
-            saveBlacklistToLocal({blacklist: cachedBlacklist, dictionary: [], ignoreList: []});
+            saveBlacklistToLocal({blacklist: cachedBlacklist, dictionary: cachedDictionary, ignoreList: []});
             console.log(
                 `Blacklist from local file reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`
             )
@@ -118,7 +119,9 @@ export async function getBlacklistFromBsky(): Promise<void> {
     }
     const data: ListData = readBlacklistFromLocal();
     data.blacklist.push(...cachedBlacklist);
+    data.dictionary.push(...cachedDictionary);
     data.blacklist = removeDuplicatesAndSort(data.blacklist);
+    data.dictionary = removeDuplicatesAndSort(data.dictionary);
     saveBlacklistToLocal(data);
     saveBlacklistToBsky(agent, preferences);
 }
@@ -127,6 +130,8 @@ function getBlacklistFromLocal() {
     const data: ListData = readBlacklistFromLocal();
     cachedBlacklist.push(...data.blacklist);
     cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
+    cachedDictionary.push(...data.dictionary);
+    cachedDictionary = removeDuplicatesAndSort(cachedDictionary);
 }
 
 function readBlacklistFromLocal(): ListData {

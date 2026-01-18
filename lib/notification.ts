@@ -28,5 +28,6 @@ export async function notification() {
         }
         lastLoaded = now;
     }
+    console.log(`${cashedNotification ? `New notification available` : `No new notification`}`)
     return cashedNotification;
 }

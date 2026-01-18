@@ -1,9 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import {notification} from "@/lib/notification";
 
 export default async function Header() {
-    const hasNotification = await notification();
     const userHandle = "chrome199523.bsky.social";
     return (
         <nav
@@ -15,12 +13,11 @@ export default async function Header() {
                     <div className="position-relative">
                         <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
                                width={32} height={32}/>
-                        {hasNotification && (
                             <span
-                                className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                                <span className="visually-hidden">New notifications</span>
+                                id="notification-badge"
+                                className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle hidden`}>
+                                <span className={"visually-hidden"}>New notifications</span>
                             </span>
-                        )}
                     </div>
                 </a>
 

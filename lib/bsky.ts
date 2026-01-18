@@ -14,7 +14,7 @@ export const agentConfig = globalForAgent.agentConfig || {
 if (process.env.NODE_ENV !== 'production') globalForAgent.agentConfig = agentConfig;
 
 export async function getAgent() {
-    if (agentConfig.agent && agentConfig.agent.hasSession) {
+    if (agentConfig.agent && agentConfig.agent.hasSession && agentConfig.agent.session?.active) {
         return agentConfig.agent;
     }
 
@@ -24,10 +24,13 @@ export async function getAgent() {
 
     // Perform the "startup task" (e.g., login)
     try {
-        await agent.login({
-            identifier: process.env.USER_HANDLE!,
-            password: process.env.USER_PASSWORD!,
-        });
+        for (const retry in [1, 2, 3]) {
+            const res = await agent.login({
+                identifier: process.env.USER_HANDLE!,
+                password: process.env.USER_PASSWORD!,
+            });
+            if (res.success) break;
+        }
     } catch (error) {
         console.error('Failed to login to Bluesky:', error);
         // Consider throwing the error or handling it in a way that makes sense for your application

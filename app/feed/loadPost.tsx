@@ -50,6 +50,10 @@ export default function LoadPost({type}: { type: string }) {
         // console.log(postReq.data.feed);
         window.dispatchEvent(new CustomEvent('load-next-page-finished'));
         window.scrollTo({top: 0, behavior: 'smooth'});
+        fetch('/api/profile/notification').then(res => res.json()).then(notification => {
+            if (notification) document.getElementById('notification-badge')?.classList.remove('hidden');
+            else document.getElementById('notification-badge')?.classList.add('hidden');
+        });
         return constructFeedPage(postReq.data.feed);
     }
 

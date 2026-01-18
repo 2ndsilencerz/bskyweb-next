@@ -81,51 +81,6 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
     const animationTemplate = 'flash 0.3s ease-in-out infinite';
-    // useEffect(() => {
-    //     if (isLikeAnimating) {
-    //         const timer = setTimeout(() => {
-    //             setIsLikeAnimating(false);
-    //             likeAnimatedRef.current = false;
-    //         }, 0);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isLikeAnimating]);
-    // useEffect(() => {
-    //     if (isBookmarkAnimating) {
-    //         const timer = setTimeout(() => {
-    //             setIsBookmarkAnimating(false);
-    //             bookmarkAnimatedRef.current = false;
-    //         }, 0);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isBookmarkAnimating]);
-    // useEffect(() => {
-    //     if (isDeleteAnimating) {
-    //         const timer = setTimeout(() => {
-    //             setIsDeleteAnimating(false);
-    //             deleteAnimatedRef.current = false;
-    //         }, 0);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isDeleteAnimating]);
-    // useEffect(() => {
-    //     if (isBlockAnimating) {
-    //         const timer = setTimeout(() => {
-    //             setIsBlockAnimating(false);
-    //             blockAnimatedRef.current = false;
-    //         }, 0);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isBlockAnimating]);
-    // useEffect(() => {
-    //     if (isMuteAnimating) {
-    //         const timer = setTimeout(() => {
-    //             setIsMuteAnimating(false);
-    //             muteAnimatedRef.current = false;
-    //         }, 0);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isMuteAnimating]);
 
     if (!post || !isVisible) return <></>;
 
@@ -365,11 +320,11 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
                             {/* Actions */}
                             <div className="d-flex justify-content-end mt-3 gap-2 min-h-8">
-                                <a className={`btn btn-sm rounded-pill px-3 border-secondary text-white border-gray-700 ${postComment ? 'd-block btn-outline-secondary' : 'd-none'}`}
-                                   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank"
-                                   rel="noopener noreferrer">
-                                    {postComment}
-                                </a>
+                                {/*<a className={`btn btn-sm rounded-pill px-3 border-secondary text-white border-gray-700 ${postComment ? 'd-block btn-outline-secondary' : 'd-none'}`}*/}
+                                {/*   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank"*/}
+                                {/*   rel="noopener noreferrer">*/}
+                                {/*    {postComment}*/}
+                                {/*</a>*/}
                                 <button
                                     className={`btn btn-sm rounded-pill px-3 border-secondary ${isLiked ? 'border-danger' : 'btn-outline-secondary text-white'}`}
                                     style={{
@@ -423,7 +378,8 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             preload={true}
             loading="eager"
             alt={image.alt || ''}
-            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'}`}
+            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto`}
+            style={{maxWidth: '100%'}}
             onClick={() => setBlurred(false)}
         />
     );
@@ -435,7 +391,7 @@ function VideoTemplate({video, nsfw}: { video: string, nsfw: boolean }) {
     return (
         <video
             src={video}
-            controls
+            controls={!blurred}
             className={`rounded-3 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'}`}
             onClick={() => setBlurred(false)}
         />
