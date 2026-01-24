@@ -22,11 +22,11 @@ export default async function RootLayout(
 
     // Simple mapping for titles
     const titles: Record<string, string> = {
-        foryou: 'For You',
-        wuwa: 'Wuthering Waves',
-        miku: 'Hatsune Miku',
-        touhou: 'Touhou Project',
-        prsk: 'Colorful Stage'
+        'for-you': 'For You',
+        'wuwa-cf': 'Wuthering Waves',
+        'hatsunemiku-cf': 'Hatsune Miku',
+        'touhou-cf': 'Touhou Project',
+        'prsk-custom': 'Colorful Stage'
     };
 
     const title = titles[type] || 'Feed';

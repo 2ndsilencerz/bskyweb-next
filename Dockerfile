@@ -1,5 +1,5 @@
 FROM docker.io/node:lts
-ADD package.json /app
+ADD package.json /app/
 WORKDIR /app
 RUN npm install --verbose
 ADD . /app

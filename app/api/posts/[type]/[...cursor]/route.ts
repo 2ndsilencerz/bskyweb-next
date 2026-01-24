@@ -17,6 +17,7 @@ import {
 import {getBlacklist, getDictionary} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
+import {getSavedFeeds} from "@/lib/background";
 
 const postPerPageLimit = 10;
 let blockList: string[] = [];
@@ -54,17 +55,22 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
         let isTimeline = false;
         if (type && type === 'following') {
             isTimeline = true;
-        } else if (type && type === 'foryou') {
-            feedUrl = `at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you`;
-        } else if (type && type === 'wuwa') {
-            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/wuwa-cf`
-        } else if (type && type === 'miku') {
-            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/hatsunemiku-cf`
-        } else if (type && type === 'touhou') {
-            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/touhou-cf`
-        } else if (type && type === 'prsk') {
-            feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/prsk-custom`
+        } else if (type) {
+            const savedFeeds = await getSavedFeeds();
+            const feedItem = savedFeeds.filter((feed) => feed.uri.includes(type));
+            feedUrl = feedItem[0].uri;
         }
+        //     if (type && type === 'foryou') {
+        //     feedUrl = `at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you`;
+        // } else if (type && type === 'wuwa') {
+        //     feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/wuwa-cf`
+        // } else if (type && type === 'miku') {
+        //     feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/hatsunemiku-cf`
+        // } else if (type && type === 'touhou') {
+        //     feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/touhou-cf`
+        // } else if (type && type === 'prsk') {
+        //     feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/prsk-custom`
+        // }
 
         console.log(`Fetching feed with cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {

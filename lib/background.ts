@@ -1,4 +1,12 @@
 import {getBackground as getBackgroundApi} from '@/app/api/background/route'
+import {getAgent} from "@/lib/bsky";
+import {isSavedFeedsPrefV2} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+
+export type Feed = {
+    uri: string,
+    title: string,
+    image: string,
+}
 
 const cachedBackground: string[] = [];
 let lastLoaded: number = 0;
@@ -35,4 +43,25 @@ export function startBackgroundFetcherScheduler() {
     setInterval(async () => {
         getBackground().then().catch(e => console.error(`Error loading: ${e}`));
     }, 60 * 60 * 1000);
+}
+
+export async function getSavedFeeds() {
+    const agent = await getAgent();
+    const preferences = await agent.app.bsky.actor.getPreferences();
+
+    const savedFeed = preferences.data.preferences
+        .filter(pref => isSavedFeedsPrefV2(pref))
+        .map(pref => pref.items)
+        .flatMap(items => items.filter(item => item.type === 'feed'));
+
+    const feeds: Feed[] = [];
+    for (const feed of savedFeed) {
+        const feedDesc = await agent.app.bsky.feed.getFeedGenerator({feed: feed.value});
+        feeds.push({
+            uri: feedDesc.data.view.uri,
+            title: feedDesc.data.view.displayName,
+            image: feedDesc.data.view.avatar as string
+        });
+    }
+    return feeds;
 }
