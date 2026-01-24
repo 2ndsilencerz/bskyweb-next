@@ -28,8 +28,13 @@ export function PaginationButton() {
     const handleSubmit = () => {
         const input = document.getElementById('blacklist-input') as HTMLInputElement;
         if (input && input.value.trim()) {
+            let method = 'PUT';
+            if (input.value.trim().startsWith('-')) {
+                method = 'DELETE';
+                input.value = input.value.trim().substring(1);
+            }
             fetch(`/api/moderation/mute`, {
-                method: 'PUT',
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'word': encodeURIComponent(input.value.trim())
@@ -46,45 +51,49 @@ export function PaginationButton() {
     };
 
     return (
-        <footer className="fixed-bottom bg-dark bg-opacity-75 border-top border-secondary py-2 text-center"
+        <footer
+            className="fixed-bottom bg-dark bg-opacity-75 py-2 text-center align-items-center justify-content-center"
                 style={{zIndex: 1000, minHeight: '60px'}}>
-            <div className="container d-flex justify-content-between align-items-center position-relative">
-                <div className="d-none d-sm-flex align-items-center gap-2">
-                    <input
-                        type="text"
-                        className="form-control form-control-sm bg-dark text-light border-secondary"
-                        placeholder="Enter text..."
-                        style={{maxWidth: '200px'}}
-                        id="blacklist-input"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSubmit();
-                            }
-                        }}
-                    />
+            <div
+                className="container d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center position-relative gap-2">
+                <div className="d-flex align-items-center justify-content-between w-100 gap-2">
+                    <div className="d-flex align-items-center gap-2">
+                        <input
+                            type="text"
+                            className="form-control form-control-sm bg-dark text-white border-secondary"
+                            placeholder="Enter text..."
+                            style={{maxWidth: '200px', width: '120px'}}
+                            id="blacklist-input"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSubmit();
+                                }
+                            }}
+                        />
+                        <button
+                            className="btn btn-sm rounded-pill px-3 text-white"
+                            onClick={handleSubmit}
+                        >
+                            Submit
+                        </button>
+                    </div>
                     <button
-                        className="btn btn-outline-light btn-sm border-secondary rounded-pill px-3"
-                        onClick={handleSubmit}
+                        className="btn btn-sm rounded-pill px-4 d-flex align-items-center text-white border-0"
+                        id="next-page-bottom"
+                        title="Next Page"
+                        onClick={handleNextPage}
+                        style={{
+                            // transition: 'opacity 0.3s',
+                            // opacity: isNextPageAnimating ? 0.3 : 1
+                        }}
                     >
-                        Submit
+                        <span className="me-2">Next Page</span>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 3L11 8L6 13V3Z"/>
+                        </svg>
                     </button>
                 </div>
-                <button
-                    className="btn btn-outline-light border-secondary rounded-pill px-4 d-flex align-items-center"
-                    id="next-page-bottom"
-                    title="Next Page"
-                    onClick={handleNextPage}
-                    style={{
-                        // transition: 'opacity 0.3s',
-                        // opacity: isNextPageAnimating ? 0.3 : 1
-                    }}
-                >
-                    <span className="me-2">Next Page</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"
-                         xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 3L11 8L6 13V3Z"/>
-                    </svg>
-                </button>
                 <a
                     href={copyrightLink}
                     target="_blank"

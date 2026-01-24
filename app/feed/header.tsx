@@ -5,7 +5,7 @@ export default async function Header() {
     const userHandle = "chrome199523.bsky.social";
     return (
         <nav
-            className="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-75 fixed-top border-bottom border-secondary px-3"
+            className="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-75 fixed-top px-3"
             style={{zIndex: 1000}}>
             <div className="container-fluid d-flex align-items-center">
                 <a className="navbar-brand me-3" href={`https://bsky.app/profile/${userHandle}`} target="_blank"
@@ -13,9 +13,9 @@ export default async function Header() {
                     <div className="position-relative">
                         <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
                                width={32} height={32}/>
-                            <span
-                                id="notification-badge"
-                                className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle hidden`}>
+                        <span
+                            id="notification-badge"
+                            className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle hidden`}>
                                 <span className={"visually-hidden"}>New notifications</span>
                             </span>
                     </div>

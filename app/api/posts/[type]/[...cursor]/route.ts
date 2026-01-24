@@ -104,8 +104,8 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                             console.log(`Post ${post.post.uri} is muted`);
                             return false;
                         } else if (post.post.record && post.post.record.text &&
-                            checkBlacklist(post.post.record.text as string) &&
-                            !checkDictionary(post.post.record.text as string)) {
+                            // !checkDictionary(post.post.record.text as string) &&
+                            checkBlacklist(post.post.record.text as string)) {
                             return false;
                         }
 

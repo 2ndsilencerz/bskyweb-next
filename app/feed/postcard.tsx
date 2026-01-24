@@ -187,7 +187,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
             },
             body: JSON.stringify({uri: postUri})
         });
-        if (res.ok) {
+        const resBody = await res.json();
+        if (res.ok && resBody.success) {
             setIsLiked(true);
             setPostLikes(post.likeCount ? post.likeCount + 1 : 0);
         } else alert('Failed to like post');
@@ -205,15 +206,17 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
             },
             body: JSON.stringify({uri: postUri})
         });
-        if (res.ok) setIsBookmarked(true);
-        else alert('Failed to bookmark post');
+        const resBody = await res.json();
+        if (res.ok && resBody.success) {
+            setIsBookmarked(true);
+        } else alert('Failed to bookmark post');
         setIsBookmarkAnimating(false);
         bookmarkAnimatedRef.current = false;
     };
 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
-            <div className="card bg-dark bg-opacity-75 border-secondary text-white rounded-3 overflow-hidden">
+            <div className="card bg-dark bg-opacity-75 text-white rounded-3 overflow-hidden">
                 <div className="card-body p-3">
                     <div className="d-flex align-items-start">
                         {/* Avatar */}
@@ -310,7 +313,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             </div>
 
                             {/* Embeds (Images/Video) */}
-                            <div className="mt-2 rounded-3 overflow-hidden border border-secondary">
+                            <div className="mt-2 rounded-3 overflow-hidden">
                                 {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
                                 {post.embed?.$type === 'app.bsky.embed.video#view' && (
                                     <VideoTemplate video={(post.embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>
@@ -326,7 +329,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 {/*    {postComment}*/}
                                 {/*</a>*/}
                                 <button
-                                    className={`btn btn-sm rounded-pill px-3 border-secondary ${isLiked ? 'border-danger' : 'btn-outline-secondary text-white'}`}
+                                    className={`btn btn-sm rounded-pill px-3 ${isLiked ? '' : ''} border-0`}
                                     style={{
                                         animation: isLikeAnimating ? animationTemplate : ''
                                     }}
@@ -339,7 +342,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     {/*{postLikes}*/}
                                 </button>
                                 <button
-                                    className={`btn btn-sm rounded-pill px-3 border-secondary ${isBookmarked ? 'border-info text-black' : 'btn-outline-secondary text-white'}`}
+                                    className={`btn btn-sm rounded-pill px-3 ${isBookmarked ? '' : ''} border-0`}
                                     onClick={handleBookmark} disabled={isBookmarked}
                                     style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
                                     <svg width="15" height="15" viewBox="0 0 24 24"
@@ -380,7 +383,7 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             alt={image.alt || ''}
             className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto`}
             style={{maxWidth: '100%'}}
-            onClick={() => setBlurred(false)}
+            onClick={() => setBlurred(!blurred)}
         />
     );
 }

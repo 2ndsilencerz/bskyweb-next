@@ -27,6 +27,24 @@ const nextConfig: NextConfig = {
             }
         ],
     },
+    devIndicators: false,
+    turbopack: {},
+    webpack: (config, {dev, isServer}) => {
+        if (dev && !isServer) {
+            // This effectively disables the HMR client-side connection
+            config.entry = async () => {
+                const entries = await (typeof config.entry === 'function' ? config.entry() : config.entry);
+                if (entries['main-app'] || entries['main']) {
+                    const target = entries['main-app'] ? 'main-app' : 'main';
+                    entries[target] = entries[target].filter(
+                        (entry: string) => !entry.includes('webpack-hmr')
+                    );
+                }
+                return entries;
+            };
+        }
+        return config;
+    }
 };
 
 export default nextConfig;

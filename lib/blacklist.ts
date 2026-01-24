@@ -66,8 +66,7 @@ export function addBlacklist(word: string) {
 }
 
 export function removeBlacklist(word: string) {
-    cachedBlacklist = cachedBlacklist.filter(w => w.toLowerCase() !== word.toLowerCase());
-    getBlacklistFromBsky().finally(() =>
+    getBlacklistFromBsky(true, word).finally(() =>
         console.log(`Blacklist updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`));
 }
 
@@ -94,7 +93,7 @@ export function getDictionary(): string[] {
     return cachedDictionary;
 }
 
-export async function getBlacklistFromBsky(): Promise<void> {
+export async function getBlacklistFromBsky(isRemove?: boolean, word?: string): Promise<void> {
     const agent = await getAgent();
     const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);
     const mutedPref = preferences.filter(pref => pref.$type === 'app.bsky.actor.defs#mutedWordsPref');
@@ -126,6 +125,10 @@ export async function getBlacklistFromBsky(): Promise<void> {
     data.dictionary.push(...cachedDictionary);
     data.blacklist = removeDuplicatesAndSort(data.blacklist);
     data.dictionary = removeDuplicatesAndSort(data.dictionary);
+    if (isRemove && word) {
+        data.blacklist = data.blacklist.filter(w => w.toLowerCase() !== word.toLowerCase())
+        cachedBlacklist = data.blacklist
+    }
     saveBlacklistToLocal(data);
     saveBlacklistToBsky(agent, preferences);
 }

@@ -3,7 +3,7 @@ import {posts} from "./[...cursor]/route";
 
 export async function GET(
     req: Request,
-    {params}: { params: { type: string } }
+    {params}: { params: Promise<{ type: string }> }
 ) {
     const {type: rawType} = await params;
     const type = rawType || 'foryou';
