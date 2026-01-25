@@ -218,32 +218,33 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
         <div id={`post-${postIndex}`} className="mb-2">
             <div className="card bg-dark bg-opacity-75 text-white rounded-3 overflow-hidden">
                 <div className="card-body p-3">
-                    <div className="d-flex align-items-start">
-                        {/* Avatar */}
-                        <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank" rel="noopener noreferrer"
-                           className="me-3 shrink-0">
-                            <div
-                                className="rounded-circle d-flex align-items-center justify-content-center overflow-hidden bg-primary"
-                                style={{width: '48px', height: '48px'}}>
-                                {authorAvatar ? (
-                                    <Image src={authorAvatar} width={48} height={48}
-                                           className="object-fit-cover w-100 h-100" alt="avatar"/>
-                                ) : (
-                                    <span className="fw-bold fs-5 text-white">{initials}</span>
-                                )}
-                            </div>
-                        </a>
-
+                    <div className="d-grid align-items-start">
                         {/* Content Area */}
-                        <div className="overflow-hidden">
-                            <div className="d-flex justify-content-between align-items-start">
+                        <div className="overflow-hidden d-flex flex-grow-1 align-items-center">
+                            {/* Avatar */}
+                            <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
+                               rel="noopener noreferrer"
+                               className="me-3">
+                                <div
+                                    className="rounded-circle d-flex align-items-center justify-content-center overflow-hidden bg-primary"
+                                    style={{width: '48px', height: '48px'}}>
+                                    {authorAvatar ? (
+                                        <Image src={authorAvatar} width={48} height={48}
+                                               className="object-fit-cover w-100 h-100" alt="avatar"/>
+                                    ) : (
+                                        <span className="fw-bold fs-5 text-white">{initials}</span>
+                                    )}
+                                </div>
+                            </a>
+
+                            <div className="d-flex justify-content-between align-items-start flex-grow-1">
                                 <div>
                                     <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
                                        rel="noopener noreferrer"
                                        className="text-white text-decoration-none fw-bold small">
                                         {authorDisplayName}
                                     </a>
-                                    <div className="text-secondary small">
+                                    <div className="text-secondary small text-break">
                                         @{authorHandle}
                                         <a href={`https://bsky.app/profile/${authorHandle}/post/${postId}`}
                                            target="_blank" rel="noopener noreferrer"
@@ -254,7 +255,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 </div>
 
                                 {/* Controls */}
-                                <div className="btn-group btn-group-sm">
+                                <div className="btn-group btn-group-sm ms-auto align-items-end">
                                     <button className="btn btn-outline-secondary border-0 text-white p-1"
                                             onClick={handleTranslate} disabled={isTranslated}
                                             title="Translate"
@@ -300,7 +301,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     </button>
                                 </div>
                             </div>
-
+                        </div>
+                        <div className={"overflow-hidden"}>
                             {/* Post Body */}
                             <div className="mt-2 small lh-base text-break">
                                 {convertHashtagsToLinks(postText)}
@@ -322,7 +324,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             </div>
 
                             {/* Actions */}
-                            <div className="d-flex justify-content-end mt-3 gap-2 min-h-8">
+                            <div className="d-flex justify-content-end mt-2 gap-2" style={{minHeight: '20px'}}>
                                 {/*<a className={`btn btn-sm rounded-pill px-3 border-secondary text-white border-gray-700 ${postComment ? 'd-block btn-outline-secondary' : 'd-none'}`}*/}
                                 {/*   href={`https://bsky.app/profile/${authorHandle}/post/${postId}`} target="_blank"*/}
                                 {/*   rel="noopener noreferrer">*/}
@@ -380,7 +382,7 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             height={height}
             loading="eager"
             alt={image.alt || ''}
-            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto`}
+            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto mb-2`}
             style={{maxWidth: '100%'}}
             onClick={() => setBlurred(!blurred)}
         />

@@ -4,6 +4,7 @@ import Header from "@/app/feed/header";
 import getBackground from "@/lib/background";
 import React from "react";
 import BootstrapClient from "@/app/feed/bootstrap-client";
+import "bootstrap/dist/css/bootstrap.min.css"
 
 export default async function MainLayout(title: string, children: React.ReactNode) {
     const bgImage = await getBackground() ||
@@ -20,7 +21,7 @@ export default async function MainLayout(title: string, children: React.ReactNod
                 </div>
                 <div className="bg-black border-bottom border-secondary min-vh-100">
                     <Header title={title}/>
-                    <div className="container mt-5 mb-5 pt-3 pb-3" style={{maxWidth: '600px'}}>
+                    <div className="container mt-5 mb-5 pt-4 pb-2" style={{maxWidth: '600px'}}>
                         <div id="feed">
                             {children}
                         </div>

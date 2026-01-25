@@ -34,7 +34,7 @@ export default async function Header({title}: { title: string }) {
                                width={32} height={32}/>
                         <span
                             id="notification-badge"
-                            className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle hidden`}>
+                            className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle`}>
                                 <span className={"visually-hidden"}>New notifications</span>
                             </span>
                     </div>

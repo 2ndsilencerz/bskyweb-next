@@ -7,6 +7,14 @@
     }
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-default {
+    cursor: default;
+}
+
 /* Tailwind defines `.collapse { visibility: collapse; }`
    This conflicts with Bootstrap's collapse component. */
 .collapse,
