@@ -382,8 +382,8 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             height={height}
             loading="eager"
             alt={image.alt || ''}
-            className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto mb-2`}
-            style={{maxWidth: '100%'}}
+            className={`rounded-2 w-100 h-auto mb-2 flex-grow-1`}
+            style={{maxWidth: '100%', filter: blurred ? 'blur(5px)' : ''}}
             onClick={() => setBlurred(!blurred)}
         />
     );
@@ -396,7 +396,8 @@ function VideoTemplate({video, nsfw}: { video: string, nsfw: boolean }) {
         <video
             src={video}
             controls={!blurred}
-            className={`rounded-3 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'}`}
+            className={`rounded-2 w-100 h-auto mb-2 flex-grow-1`}
+            style={{maxWidth: '100%', filter: blurred ? 'blur(5px)' : ''}}
             onClick={() => setBlurred(false)}
         />
     );
@@ -416,7 +417,9 @@ function ExternalEmbed({external}: { external: EmbedExternalView }) {
                     loading="eager"
                     width="500"
                     height="200"
+                    className="rounded-2 w-100 h-auto mb-2"
                     alt={external.external.title || ''}
+                    style={{maxWidth: '100%'}}
                 />
             )}
             <div className="p-3">
