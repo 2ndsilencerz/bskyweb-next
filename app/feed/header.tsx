@@ -40,6 +40,10 @@ export default async function Header({title}: { title: string }) {
                     </div>
                 </a>
 
+                <div id={"loading-spinner"} className="spinner-border text-primary bg-dark bg-opacity-75" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#feedsMenuCollapse" aria-controls="feedsMenuCollapse" aria-expanded="false"
                         aria-label="Toggle navigation">

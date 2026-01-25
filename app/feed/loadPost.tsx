@@ -14,6 +14,7 @@ export default function LoadPost({type}: { type: string }) {
     const uuidRef = useRef<string>('');
 
     const loadNextPage = async (currentCursor: string): Promise<JSX.Element> => {
+        document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'block');
         // If you want to use the catch-all route via URL:
         const url = currentCursor
             ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
@@ -27,11 +28,15 @@ export default function LoadPost({type}: { type: string }) {
             }
         });
 
-        if (!res.ok) return (<></>);
+        if (!res.ok) {
+            document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
+            return (<></>);
+        }
         const postReq = await res.json();
 
         if (!postReq || !postReq.data) {
             console.log('No data received from API, returning null...');
+            document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
             return (<></>);
         }
 
@@ -58,6 +63,8 @@ export default function LoadPost({type}: { type: string }) {
                 document.getElementById('notification-badge')?.attributeStyleMap.set('display', 'none');
             }
         });
+
+        document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
         return constructFeedPage(postReq.data.feed);
     }
 
