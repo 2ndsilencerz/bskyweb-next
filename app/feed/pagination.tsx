@@ -53,7 +53,7 @@ export function PaginationButton() {
     return (
         <footer
             className="fixed-bottom bg-dark bg-opacity-75 py-2 text-center align-items-center justify-content-center"
-            style={{zIndex: 1000, minHeight: '60px'}}>
+            style={{zIndex: 1000}}>
             <div
                 className="container d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center position-relative gap-2">
                 <div className="d-flex align-items-center justify-content-between w-100 gap-2">

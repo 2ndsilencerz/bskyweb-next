@@ -19,11 +19,11 @@ function getState(): MutelistState {
     return g.__mutelistState;
 }
 
-const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+const CACHE_TTL_LOCAL = 10 * 60 * 1000; // 10 m
 
 export function startMuteListScheduler() {
     const state = getState();
-    if (state.schedulerStarted) return;
+    if (state.schedulerStarted && state.cachedMutelist?.length > 0) return;
     state.schedulerStarted = true;
 
     console.log('Starting MuteList Scheduler...');
@@ -32,7 +32,7 @@ export function startMuteListScheduler() {
 
     setInterval(() => {
         getMuteList().catch(e => console.error(`Error loading muteList: ${e}`));
-    }, 600 * 1000);
+    }, 10 * 60 * 1000);
 }
 
 export async function getMuteList(): Promise<string[]> {
@@ -56,7 +56,7 @@ export async function getMuteList(): Promise<string[]> {
             state.cachedMutelist = new Set(newMutes).values().toArray().map(mute => mute.did) as string[];
             state.lastLoaded = now;
 
-            console.log(`MuteList from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${state.cachedMutelist.length}`);
+            console.log(`MuteList from Bsky reloaded. Count: ${state.cachedMutelist.length}`);
         } catch (error) {
             console.error('Failed to update muteList:', error);
         }

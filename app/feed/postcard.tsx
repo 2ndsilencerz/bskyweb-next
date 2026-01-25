@@ -378,7 +378,6 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             src={image.fullsize}
             width={width}
             height={height}
-            preload={true}
             loading="eager"
             alt={image.alt || ''}
             className={`rounded-2 ${blurred ? 'blur' : ''} ${blurred ? 'cursor-pointer' : 'cursor-default'} w-100 h-auto`}

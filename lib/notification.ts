@@ -21,6 +21,8 @@ function getState(): NotificationState {
 const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
 
 export function startNotificationScheduler() {
+    const state = getState();
+    if (state.schedulerStarted && state.lastLoaded > 0) return;
     console.log('Starting Notification Scheduler...');
     setInterval(async () => {
         await notification();
@@ -45,6 +47,6 @@ export async function notification() {
         }
         state.lastLoaded = now;
     }
-    console.log(`${state.cachedNotification ? `New notification available` : `No new notification`}`)
+    // console.log(`${state.cachedNotification ? `New notification available` : `No new notification`}`)
     return state.cachedNotification;
 }

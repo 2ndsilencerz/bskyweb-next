@@ -22,6 +22,7 @@ export default async function RootLayout(
 
     // Simple mapping for titles
     const titles: Record<string, string> = {
+        'following': 'Following',
         'for-you': 'For You',
         'wuwa-cf': 'Wuthering Waves',
         'hatsunemiku-cf': 'Hatsune Miku',

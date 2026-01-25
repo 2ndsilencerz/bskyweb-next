@@ -1,10 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import {Feed, getSavedFeeds} from "@/lib/background";
+import {Feed, getSavedFeeds} from "@/lib/saved-feeds";
 import {JSX} from "react";
+import {getProfileInfo} from "@/lib/profile";
 
 export default async function Header({title}: { title: string }) {
-    const feeds = await getSavedFeeds();
+    const profile = await getProfileInfo();
+    const feeds: Feed[] = [];
+    feeds.push({
+        uri: "following",
+        title: "Following",
+        image: profile?.avatar || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+    });
+    const savedFeeds = await getSavedFeeds();
+    feeds.push(...savedFeeds);
     const feedsMenu = feeds.map((feed) => {
         return <FeedMenu
             key={feed.uri}
@@ -15,9 +24,9 @@ export default async function Header({title}: { title: string }) {
     const userHandle = "chrome199523.bsky.social";
     return (
         <nav
-            className="navbar navbar-expand-lg navbar-dark bg-dark bg-opacity-75 fixed-top px-3"
+            className="navbar navbar-dark bg-dark bg-opacity-75 fixed-top px-3"
             style={{zIndex: 1000}}>
-            <div className="container-fluid d-flex align-items-center">
+            <div className="container-fluid d-flex flex-wrap align-items-center">
                 <a className="navbar-brand me-3" href={`https://bsky.app/profile/${userHandle}`} target="_blank"
                    rel="noopener noreferrer">
                     <div className="position-relative">
@@ -31,8 +40,15 @@ export default async function Header({title}: { title: string }) {
                     </div>
                 </a>
 
-                <div className="d-flex overflow-auto align-items-center">
-                    {feedsMenu}
+                <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#feedsMenuCollapse" aria-controls="feedsMenuCollapse" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon"></span>
+                </button>
+                <div className="navbar-collapse collapse" id="feedsMenuCollapse">
+                    <div className="d-flex overflow-auto align-items-center">
+                        {feedsMenu}
+                    </div>
                 </div>
             </div>
         </nav>
@@ -43,6 +59,7 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
     const feedName = feed.uri.split('/').pop() as string;
     // Simple mapping for titles
     const titles: Record<string, string> = {
+        'following': 'Following',
         'for-you': 'For You',
         'wuwa-cf': 'Wuthering Waves',
         'hatsunemiku-cf': 'Hatsune Miku',
@@ -53,7 +70,7 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
     const isActive = feedTitle.includes(title);
 
     return (
-        <Link href={`/feed/${feedName}`} className="nav-link p-0 d-flex align-items-center">
+        <Link href={`/feed/${feedName}`} className="nav-link p-0 d-flex align-items-center me-2">
             <Image
                 src={feed.image}
                 alt={`${feedName} icon`}
@@ -61,7 +78,7 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
                 height={28}
                 className={`rounded-circle border ${isActive ? 'border-danger' : 'border-secondary'}`}>
             </Image>
-            <span className="ms-2 me-2 text-white fw-bold d-none d-md-inline">{feedTitle}</span>
+            <span className="ms-2 text-white fw-bold d-none d-md-inline">{feedTitle}</span>
         </Link>
     )
 }

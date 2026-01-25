@@ -17,7 +17,7 @@ import {
 import {getBlacklist, getDictionary} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
-import {getSavedFeeds} from "@/lib/background";
+import {getSavedFeeds} from "@/lib/saved-feeds";
 
 const postPerPageLimit = 10;
 let blockList: string[] = [];

@@ -42,7 +42,7 @@ function getState(): BlacklistState {
 
 export function startBlacklistScheduler() {
     const state = getState();
-    if (state.schedulerStarted) return;
+    if (state.schedulerStarted && state.cachedBlacklist?.length > 0) return;
     state.schedulerStarted = true;
 
     console.log('Starting Blacklist Scheduler...');
@@ -74,7 +74,7 @@ export function startBlacklistScheduler() {
         } finally {
             state.isApiUpdateRunning = false;
         }
-    }, 600 * 1000);
+    }, 10 * 60 * 1000);
 }
 
 export function addBlacklist(word: string) {

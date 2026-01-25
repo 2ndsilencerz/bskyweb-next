@@ -6,3 +6,10 @@
         opacity: 0.3;
     }
 }
+
+/* Tailwind defines `.collapse { visibility: collapse; }`
+   This conflicts with Bootstrap's collapse component. */
+.collapse,
+.collapsing {
+    visibility: visible !important;
+}

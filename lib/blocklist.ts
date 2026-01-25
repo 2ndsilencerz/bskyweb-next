@@ -19,11 +19,11 @@ function getState(): BlocklistState {
     return g.__blocklistState;
 }
 
-const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+const CACHE_TTL_LOCAL = 10 * 60 * 1000; // 10 m
 
 export function startBlocklistScheduler() {
     const state = getState();
-    if (state.schedulerStarted) return;
+    if (state.schedulerStarted && state.cachedBlocklist?.length > 0) return;
     state.schedulerStarted = true;
 
     console.log('Starting Blocklist Scheduler...');
@@ -32,7 +32,7 @@ export function startBlocklistScheduler() {
 
     setInterval(() => {
         getBlocklist().catch(e => console.error(`Error loading blocklist: ${e}`));
-    }, 600 * 1000);
+    }, 10 * 60 * 1000);
 }
 
 export async function getBlocklist(): Promise<string[]> {
@@ -56,7 +56,7 @@ export async function getBlocklist(): Promise<string[]> {
             state.cachedBlocklist = new Set(newBlocks).values().toArray().map(block => block.did) as string[];
             state.lastLoaded = now;
 
-            console.log(`Blocklist from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${state.cachedBlocklist.length}`);
+            console.log(`Blocklist from Bsky reloaded. Count: ${state.cachedBlocklist.length}`);
         } catch (error) {
             console.error('Failed to update blocklist:', error);
         }
