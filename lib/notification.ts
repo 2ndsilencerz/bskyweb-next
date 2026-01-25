@@ -1,7 +1,23 @@
 import {getAgent} from "@/lib/bsky";
 
-let cashedNotification: boolean = false;
-let lastLoaded: number = 0;
+type NotificationState = {
+    cachedNotification: boolean;
+    lastLoaded: number;
+    schedulerStarted: boolean;
+};
+
+function getState(): NotificationState {
+    const g = globalThis as unknown as { __notificationState?: NotificationState };
+    if (!g.__notificationState) {
+        g.__notificationState = {
+            cachedNotification: false,
+            lastLoaded: 0,
+            schedulerStarted: false,
+        };
+    }
+    return g.__notificationState;
+}
+
 const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
 
 export function startNotificationScheduler() {
@@ -12,22 +28,23 @@ export function startNotificationScheduler() {
 }
 
 export async function notification() {
+    const state = getState();
     const now = Date.now();
-    if (now - lastLoaded > CACHE_TTL_LOCAL) {
+    if (now - state.lastLoaded > CACHE_TTL_LOCAL) {
         const agent = await getAgent();
 
         const res = await agent.listNotifications({
             limit: 10,
         });
 
-        if (!res.success) return cashedNotification;
+        if (!res.success) return state.cachedNotification;
         const notificationNotRead = res.data.notifications
             .filter(notification => !notification.isRead).length;
         if (notificationNotRead > 0) {
-            cashedNotification = true;
+            state.cachedNotification = true;
         }
-        lastLoaded = now;
+        state.lastLoaded = now;
     }
-    console.log(`${cashedNotification ? `New notification available` : `No new notification`}`)
-    return cashedNotification;
+    console.log(`${state.cachedNotification ? `New notification available` : `No new notification`}`)
+    return state.cachedNotification;
 }

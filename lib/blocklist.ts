@@ -1,49 +1,66 @@
 import {getAgent} from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
-let cachedBlocklist: string[] = [];
-let lastLoaded: number = 0;
-const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+type BlocklistState = {
+    cachedBlocklist: string[];
+    lastLoaded: number;
+    schedulerStarted: boolean;
+};
 
-export function blocklist() {
-    return cachedBlocklist;
+function getState(): BlocklistState {
+    const g = globalThis as unknown as { __blocklistState?: BlocklistState };
+    if (!g.__blocklistState) {
+        g.__blocklistState = {
+            cachedBlocklist: [],
+            lastLoaded: 0,
+            schedulerStarted: false,
+        };
+    }
+    return g.__blocklistState;
 }
 
+const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+
 export function startBlocklistScheduler() {
+    const state = getState();
+    if (state.schedulerStarted) return;
+    state.schedulerStarted = true;
+
     console.log('Starting Blocklist Scheduler...');
 
-    // Initial load
-    getBlocklist().then().catch(e => console.error(`Error loading blocklist: ${e}`));
+    getBlocklist().catch(e => console.error(`Error loading blocklist: ${e}`));
 
-    // Schedule periodic updates (every 10 minute)
-    setInterval(async () => {
-        getBlocklist().then().catch(e => console.error(`Error loading blocklist: ${e}`));
+    setInterval(() => {
+        getBlocklist().catch(e => console.error(`Error loading blocklist: ${e}`));
     }, 600 * 1000);
 }
 
 export async function getBlocklist(): Promise<string[]> {
+    const state = getState();
     const now = Date.now();
-    if (now - lastLoaded > CACHE_TTL_LOCAL) {
+
+    if (now - state.lastLoaded > CACHE_TTL_LOCAL) {
         const agent = await getAgent();
         try {
-            const newBlocks: ProfileView[] = []
-            let cursor: string | undefined = undefined
+            const newBlocks: ProfileView[] = [];
+            let cursor: string | undefined = undefined;
 
             do {
-                const response = await agent.app.bsky.graph.getBlocks({limit: 100, cursor})
+                const response = await agent.app.bsky.graph.getBlocks({limit: 100, cursor});
                 for (const block of response.data.blocks) {
-                    newBlocks.push(block)
+                    newBlocks.push(block);
                 }
-                cursor = response.data.cursor
-            } while (cursor)
+                cursor = response.data.cursor;
+            } while (cursor);
 
-            cachedBlocklist = new Set(newBlocks).values().toArray().map(block => block.did) as string[];
-            lastLoaded = now;
-            console.log(`Blocklist from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlocklist.length}`);
+            state.cachedBlocklist = new Set(newBlocks).values().toArray().map(block => block.did) as string[];
+            state.lastLoaded = now;
+
+            console.log(`Blocklist from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${state.cachedBlocklist.length}`);
         } catch (error) {
             console.error('Failed to update blocklist:', error);
-            // Return existing cache if it exists, otherwise empty
         }
     }
-    return cachedBlocklist;
+
+    return state.cachedBlocklist;
 }

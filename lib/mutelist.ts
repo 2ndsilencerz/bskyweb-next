@@ -1,49 +1,66 @@
 import {getAgent} from './bsky';
 import {ProfileView} from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
-let cachedMutelist: string[] = [];
-let lastLoaded: number = 0;
-const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+type MutelistState = {
+    cachedMutelist: string[];
+    lastLoaded: number;
+    schedulerStarted: boolean;
+};
 
-export function muteList() {
-    return cachedMutelist;
+function getState(): MutelistState {
+    const g = globalThis as unknown as { __mutelistState?: MutelistState };
+    if (!g.__mutelistState) {
+        g.__mutelistState = {
+            cachedMutelist: [],
+            lastLoaded: 0,
+            schedulerStarted: false,
+        };
+    }
+    return g.__mutelistState;
 }
 
+const CACHE_TTL_LOCAL = 600 * 1000; // 10 m
+
 export function startMuteListScheduler() {
+    const state = getState();
+    if (state.schedulerStarted) return;
+    state.schedulerStarted = true;
+
     console.log('Starting MuteList Scheduler...');
 
-    // Initial load
-    getMuteList().then().catch(e => console.error(`Error loading muteList: ${e}`));
+    getMuteList().catch(e => console.error(`Error loading muteList: ${e}`));
 
-    // Schedule periodic updates (every 10 minute)
-    setInterval(async () => {
-        getMuteList().then().catch(e => console.error(`Error loading muteList: ${e}`));
+    setInterval(() => {
+        getMuteList().catch(e => console.error(`Error loading muteList: ${e}`));
     }, 600 * 1000);
 }
 
 export async function getMuteList(): Promise<string[]> {
+    const state = getState();
     const now = Date.now();
-    if (now - lastLoaded > CACHE_TTL_LOCAL) {
+
+    if (now - state.lastLoaded > CACHE_TTL_LOCAL) {
         const agent = await getAgent();
         try {
-            const newMutes: ProfileView[] = []
-            let cursor: string | undefined = undefined
+            const newMutes: ProfileView[] = [];
+            let cursor: string | undefined = undefined;
 
             do {
-                const response = await agent.app.bsky.graph.getMutes({limit: 100, cursor})
+                const response = await agent.app.bsky.graph.getMutes({limit: 100, cursor});
                 for (const mute of response.data.mutes) {
-                    newMutes.push(mute)
+                    newMutes.push(mute);
                 }
-                cursor = response.data.cursor
-            } while (cursor)
+                cursor = response.data.cursor;
+            } while (cursor);
 
-            cachedMutelist = new Set(newMutes).values().toArray().map(mute => mute.did) as string[];
-            lastLoaded = now;
-            console.log(`MuteList from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${cachedMutelist.length}`);
+            state.cachedMutelist = new Set(newMutes).values().toArray().map(mute => mute.did) as string[];
+            state.lastLoaded = now;
+
+            console.log(`MuteList from Bsky reloaded at ${new Date(now).toISOString()}. Count: ${state.cachedMutelist.length}`);
         } catch (error) {
             console.error('Failed to update muteList:', error);
-            // Return existing cache if it exists, otherwise empty
         }
     }
-    return cachedMutelist;
+
+    return state.cachedMutelist;
 }

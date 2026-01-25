@@ -12,133 +12,158 @@ interface ListData {
 }
 
 const LIST_FILE_PATH = path.join(process.cwd(), 'list.json');
-
-let cachedBlacklist: string[] = [];
-let cachedDictionary: string[] = [];
-let lastLoaded: number = 0;
 const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
 
-export function blacklist() {
-    return cachedBlacklist;
+type BlacklistState = {
+    cachedBlacklist: string[];
+    cachedDictionary: string[];
+    lastLoaded: number;
+    schedulerStarted: boolean;
+    instanceId: string;
+    isLocalUpdateRunning: boolean;
+    isApiUpdateRunning: boolean;
+};
+
+function getState(): BlacklistState {
+    const g = globalThis as unknown as { __blacklistState?: BlacklistState };
+    if (!g.__blacklistState) {
+        g.__blacklistState = {
+            cachedBlacklist: [],
+            cachedDictionary: [],
+            lastLoaded: 0,
+            schedulerStarted: false,
+            isLocalUpdateRunning: false,
+            isApiUpdateRunning: false,
+            instanceId: Math.random().toString(36).substring(2, 15)
+        };
+    }
+    return g.__blacklistState;
 }
 
 export function startBlacklistScheduler() {
-    console.log('Starting Blacklist Scheduler...');
+    const state = getState();
+    if (state.schedulerStarted) return;
+    state.schedulerStarted = true;
 
-    // Initial load
+    console.log('Starting Blacklist Scheduler...');
     getBlacklist();
 
-    // Schedule periodic updates (every 1 minute)
-    let isLocalUpdateRunning = false;
-    let isApiUpdateRunning = false;
-
-    setInterval(async () => {
-        if (isApiUpdateRunning) {
+    setInterval(() => {
+        if (state.isApiUpdateRunning) {
             console.log('Delaying local blacklist update due to API update in progress');
             return;
         }
-        isLocalUpdateRunning = true;
+        state.isLocalUpdateRunning = true;
         try {
+            console.log('Updating blacklist from local...');
             getBlacklist();
         } finally {
-            isLocalUpdateRunning = false;
+            state.isLocalUpdateRunning = false;
         }
     }, 60 * 1000);
 
-    setInterval(async () => {
-        if (isLocalUpdateRunning) {
+    setInterval(() => {
+        if (state.isLocalUpdateRunning) {
             console.log('Delaying API blacklist update due to local update in progress');
             return;
         }
-        isApiUpdateRunning = true;
+        state.isApiUpdateRunning = true;
         try {
-            getBlacklistFromBsky().then().catch(e => console.error(`Error updating blacklist from Bsky: ${e}`));
+            console.log('Updating blacklist from Bsky...');
+            getBlacklistFromBsky().catch(e => console.error(`Error updating blacklist from Bsky: ${e}`));
         } finally {
-            isApiUpdateRunning = false;
+            state.isApiUpdateRunning = false;
         }
     }, 600 * 1000);
 }
 
 export function addBlacklist(word: string) {
-    cachedBlacklist.push(word.toLowerCase());
+    const state = getState();
+    state.cachedBlacklist.push(word.toLowerCase());
     getBlacklistFromBsky().finally(() =>
-        console.log(`Blacklist updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`));
+        console.log(`Blacklist updated. Count: ${state.cachedBlacklist.length}`));
 }
 
 export function removeBlacklist(word: string) {
+    const state = getState();
     getBlacklistFromBsky(true, word).finally(() =>
-        console.log(`Blacklist updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`));
+        console.log(`Blacklist updated. Count: ${state.cachedBlacklist.length}`));
 }
 
 export function getBlacklist(): string[] {
+    const state = getState();
     const now = Date.now();
-    if (now - lastLoaded > CACHE_TTL_LOCAL) {
+    if (now - state.lastLoaded > CACHE_TTL_LOCAL) {
         try {
-            getBlacklistFromLocal();
-            saveBlacklistToLocal({blacklist: cachedBlacklist, dictionary: cachedDictionary, ignoreList: []});
-            console.log(
-                `Blacklist from local file reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`
-            )
-            lastLoaded = now;
-            console.log(`Blacklist reloaded at ${new Date(now).toISOString()}. Count: ${cachedBlacklist.length}`);
+            getBlacklistFromLocalAndMergeWithCache();
+            state.lastLoaded = now;
         } catch (error) {
             console.error('Failed to load blacklist from list.json:', error);
-            // Return existing cache if it exists, otherwise empty
         }
     }
-    return cachedBlacklist;
+    return state.cachedBlacklist;
 }
 
 export function getDictionary(): string[] {
-    return cachedDictionary;
+    return getState().cachedDictionary;
 }
 
 export async function getBlacklistFromBsky(isRemove?: boolean, word?: string): Promise<void> {
+    const state = getState();
+
+    if (isRemove && word) {
+        console.log(`Updating blacklist from Bsky, additionally removing word: ${word}`);
+    } else {
+        console.log(`Updating blacklist from Bsky`);
+    }
+
     const agent = await getAgent();
     const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);
     const mutedPref = preferences.filter(pref => pref.$type === 'app.bsky.actor.defs#mutedWordsPref');
-    if (mutedPref.length === 0) {
-        console.log('No muted words found');
-        return;
-    }
-    console.log('Muted words found:', isMutedWordsPref(mutedPref[0]) ? mutedPref[0].items.length : 0);
 
     try {
         if (isMutedWordsPref(mutedPref[0])) {
             mutedPref[0].items.forEach((item: MutedWord) => {
                 if (item.targets.length == 1) {
-                    cachedBlacklist.push('#' + item.value.toLowerCase());
+                    state.cachedBlacklist.push('#' + item.value.toLowerCase());
                 } else {
-                    cachedBlacklist.push(item.value.toLowerCase());
+                    state.cachedBlacklist.push(item.value.toLowerCase());
                 }
             });
-            cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
-            console.log(`Blacklist from Bsky updated at ${new Date().toISOString()}. Count: ${cachedBlacklist.length}`);
+            state.cachedBlacklist = removeDuplicatesAndSort(state.cachedBlacklist);
+            console.log(`Blacklist from Bsky merged with cache. Count: ${state.cachedBlacklist.length}`);
         } else {
             console.log('Fail to process muted words');
         }
     } catch (error) {
-        console.error(`Error adding muted words to blacklist: ${error}`)
+        console.error(`Error adding muted words to blacklist: ${error}`);
     }
-    const data: ListData = readBlacklistFromLocal();
-    data.blacklist.push(...cachedBlacklist);
-    data.dictionary.push(...cachedDictionary);
-    data.blacklist = removeDuplicatesAndSort(data.blacklist);
-    data.dictionary = removeDuplicatesAndSort(data.dictionary);
+
+    getBlacklistFromLocalAndMergeWithCache();
+
     if (isRemove && word) {
-        data.blacklist = data.blacklist.filter(w => w.toLowerCase() !== word.toLowerCase())
-        cachedBlacklist = data.blacklist
+        state.cachedBlacklist = state.cachedBlacklist.filter(w => w.toLowerCase() !== word.toLowerCase());
+        console.log(`Removed word from blacklist: ${word}`);
+        console.log(`Blacklist from cache updated. Count: ${state.cachedBlacklist.length}`);
     }
-    saveBlacklistToLocal(data);
+
+    saveBlacklistToLocal({blacklist: state.cachedBlacklist, dictionary: state.cachedDictionary, ignoreList: []});
     saveBlacklistToBsky(agent, preferences);
 }
 
-function getBlacklistFromLocal() {
+function getBlacklistFromLocalAndMergeWithCache() {
+    const state = getState();
     const data: ListData = readBlacklistFromLocal();
-    cachedBlacklist.push(...data.blacklist);
-    cachedBlacklist = removeDuplicatesAndSort(cachedBlacklist);
-    cachedDictionary.push(...data.dictionary);
-    cachedDictionary = removeDuplicatesAndSort(cachedDictionary);
+    console.log(`Blacklist from local count: ${data.blacklist.length}.`);
+    console.log(`Blacklist from cache count: ${state.cachedBlacklist.length}. Merging with local data...`);
+
+    state.cachedBlacklist.push(...data.blacklist);
+    state.cachedBlacklist = removeDuplicatesAndSort(state.cachedBlacklist);
+
+    state.cachedDictionary.push(...data.dictionary);
+    state.cachedDictionary = removeDuplicatesAndSort(state.cachedDictionary);
+
+    console.log(`Blacklist from cache updated. Count: ${state.cachedBlacklist.length}`);
 }
 
 function readBlacklistFromLocal(): ListData {
@@ -150,32 +175,37 @@ function removeDuplicatesAndSort(array: string[]): string[] {
     array = array.filter(word => {
         word = word.toLowerCase();
         if (word.includes('#')) {
-            const wordWithoutPrefix = word.replace('#', '')
-            return !array.includes(wordWithoutPrefix)
+            const wordWithoutPrefix = word.replace('#', '');
+            return !array.includes(wordWithoutPrefix);
         }
-        return true
+        return true;
     });
     return [...new Set(array)].sort((a, b) => b.localeCompare(a)).map(word => word.toLowerCase());
 }
 
 function saveBlacklistToLocal(data: ListData) {
+    console.log(`Blacklist from cache count: ${data.blacklist.length}. Saving blacklist to local...`);
     fs.writeFileSync(LIST_FILE_PATH, JSON.stringify(data, null, 2));
 }
 
 function saveBlacklistToBsky(agent: AtpAgent, preferences: Preferences) {
+    const state = getState();
+    console.log(`Blacklist from cache count: ${state.cachedBlacklist.length}. Saving blacklist to Bsky...`);
+
     preferences.filter(pref => isMutedWordsPref(pref)).forEach(pref => {
-        pref.items = []
-        for (let word of cachedBlacklist) {
+        pref.items = [];
+        for (let word of state.cachedBlacklist) {
             if (word.includes('#')) {
-                word = word.replace('#', '')
-                pref.items.push({value: word.toLowerCase(), targets: ["tag"], actorTarget: "all"})
+                word = word.replace('#', '');
+                pref.items.push({value: word.toLowerCase(), targets: ["tag"], actorTarget: "all"});
             } else {
-                pref.items.push({value: word.toLowerCase(), targets: ["tag", "content"], actorTarget: "all"})
+                pref.items.push({value: word.toLowerCase(), targets: ["tag", "content"], actorTarget: "all"});
             }
         }
-        pref.items.sort((a: MutedWord, b: MutedWord) => b.value.localeCompare(a.value))
-    })
-    agent.app.bsky.actor.putPreferences({preferences: preferences}).then((response) => {
-        console.log(`[${new Date().toISOString()}] Mutes added successfully: ${JSON.stringify(response)}`)
-    }).catch(e => console.error(`[${new Date().toISOString()}] Error updating muted words list: ${e}`))
+        pref.items.sort((a: MutedWord, b: MutedWord) => b.value.localeCompare(a.value));
+    });
+
+    agent.app.bsky.actor.putPreferences({preferences: preferences})
+        .then((response) => console.log(`Mutes added successfully: ${JSON.stringify(response)}`))
+        .catch(e => console.error(`Error updating muted words list: ${e}`));
 }
