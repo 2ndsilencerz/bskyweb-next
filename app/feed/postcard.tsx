@@ -96,6 +96,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const nsfwPost = post.labels?.some(label =>
         ['sexual', 'porn', 'nudity'].includes(label.val)
     ) || false;
+    const isFollowing = post.author.viewer?.following || false;
 
     const media = isMediaView(post.embed) ? post.embed.media : undefined;
     const embed = post.embed || media;
@@ -216,7 +217,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
-            <div className="card bg-dark bg-opacity-75 text-white rounded-3 overflow-hidden">
+            <div
+                className={`card ${isLiked ? 'bg-secondary' : 'bg-dark'} ${isLiked ? 'bg-opacity-50' : 'bg-opacity-75'} text-white rounded-3 overflow-hidden`}>
                 <div className="card-body p-3">
                     <div className="d-grid align-items-start">
                         {/* Content Area */}
@@ -241,7 +243,15 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 <div>
                                     <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
                                        rel="noopener noreferrer"
-                                       className="text-white text-decoration-none fw-bold small">
+                                       className="text-decoration-none fw-bold small"
+                                       style={{
+                                           background: isFollowing ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
+                                           backgroundSize: '200% 100%',
+                                           WebkitBackgroundClip: isFollowing ? 'text' : 'initial',
+                                           backgroundClip: isFollowing ? 'text' : 'initial',
+                                           WebkitTextFillColor: isFollowing ? 'transparent' : 'white',
+                                           animation: isFollowing ? 'rainbow 3s linear infinite' : 'none'
+                                       }}>
                                         {authorDisplayName}
                                     </a>
                                     <div className="text-secondary small text-break">
