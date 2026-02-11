@@ -31,7 +31,7 @@ export default async function Header({title}: { title: string }) {
                    rel="noopener noreferrer">
                     <div className="position-relative">
                         <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
-                               width={32} height={32}/>
+                               width={32} height={32} priority unoptimized decoding={"async"}/>
                         <span
                             id="notification-badge"
                             className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle`}>
@@ -44,10 +44,10 @@ export default async function Header({title}: { title: string }) {
                     <span className="visually-hidden">Loading...</span>
                 </div>
 
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
+                <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
                         data-bs-target="#feedsMenuCollapse" aria-controls="feedsMenuCollapse" aria-expanded="false"
                         aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
+                    <span className="navbar-toggler-icon border-0"></span>
                 </button>
                 <div className="navbar-collapse collapse" id="feedsMenuCollapse">
                     <div className="d-flex overflow-auto align-items-center">
@@ -80,7 +80,10 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
                 alt={`${feedName} icon`}
                 width={28}
                 height={28}
-                className={`rounded-circle border ${isActive ? 'border-danger' : 'border-secondary'}`}>
+                className={`rounded-circle border ${isActive ? 'border-danger' : 'border-secondary'}`}
+                priority
+                unoptimized
+                decoding={"async"}>
             </Image>
             <span className="ms-2 text-white fw-bold d-none d-md-inline">{feedTitle}</span>
         </Link>

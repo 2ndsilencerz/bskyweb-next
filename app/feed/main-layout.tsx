@@ -15,8 +15,8 @@ export default async function MainLayout(title: string, children: React.ReactNod
             <div>
                 <div className="fixed-top vw-100 vh-100 z-0">
                     <div className="bg-black bg-opacity-25 vw-100 vh-100">
-                        <Image src={bgImage[0]} alt="bgImage" width={1920} height={1080} loading="lazy"
-                               className="z-n1 w-100 h-100 object-fit-cover"/>
+                        <Image src={bgImage[0]} alt="bgImage" width={1920} height={1080}
+                               className="z-n1 w-100 h-100 object-fit-cover" priority unoptimized decoding={"async"}/>
                     </div>
                 </div>
                 <div className="bg-black border-bottom border-secondary min-vh-100">

@@ -218,7 +218,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
             <div
-                className={`card ${isLiked ? 'bg-secondary' : 'bg-dark'} ${isLiked ? 'bg-opacity-50' : 'bg-opacity-75'} text-white rounded-3 overflow-hidden`}>
+                className={`card ${isLiked ? 'bg-secondary' : 'bg-dark'} ${isLiked ? 'bg-opacity-50' : 'bg-opacity-75'} text-white rounded-3 overflow-hidden border-0`}>
                 <div className="card-body p-3">
                     <div className="d-grid align-items-start">
                         {/* Content Area */}
@@ -232,7 +232,8 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     style={{width: '48px', height: '48px'}}>
                                     {authorAvatar ? (
                                         <Image src={authorAvatar} width={48} height={48}
-                                               className="object-fit-cover w-100 h-100" alt="avatar"/>
+                                               className="object-fit-cover w-100 h-100" alt="avatar" priority
+                                               unoptimized decoding={"async"}/>
                                     ) : (
                                         <span className="fw-bold fs-5 text-white">{initials}</span>
                                     )}
@@ -325,7 +326,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             </div>
 
                             {/* Embeds (Images/Video) */}
-                            <div className="mt-2 rounded-3 overflow-hidden">
+                            <div className="mt-2 rounded-3 overflow-hidden border-0">
                                 {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
                                 {post.embed?.$type === 'app.bsky.embed.video#view' && (
                                     <VideoTemplate video={(post.embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>
@@ -390,11 +391,13 @@ function ImageTemplate({image, nsfw}: { image: ViewImage, nsfw: boolean }) {
             src={image.fullsize}
             width={width}
             height={height}
-            loading="eager"
             alt={image.alt || ''}
             className={`rounded-2 w-100 h-auto mb-2 flex-grow-1`}
             style={{maxWidth: '100%', filter: blurred ? 'blur(5px)' : ''}}
             onClick={() => setBlurred(!blurred)}
+            priority
+            unoptimized
+            decoding={"async"}
         />
     );
 }
@@ -424,12 +427,14 @@ function ExternalEmbed({external}: { external: EmbedExternalView }) {
             {external.external.thumb && (
                 <Image
                     src={external.external.thumb}
-                    loading="eager"
                     width="500"
                     height="200"
                     className="rounded-2 w-100 h-auto mb-2"
                     alt={external.external.title || ''}
                     style={{maxWidth: '100%'}}
+                    priority
+                    unoptimized
+                    decoding={"async"}
                 />
             )}
             <div className="p-3">
