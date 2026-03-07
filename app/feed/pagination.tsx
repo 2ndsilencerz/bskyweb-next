@@ -52,7 +52,7 @@ export function PaginationButton() {
 
     return (
         <footer
-            className="fixed-bottom bg-dark bg-opacity-75 py-2 text-center align-items-center justify-content-center"
+            className="fixed-bottom py-2 text-center align-items-center justify-content-center"
             style={{zIndex: 1000}}>
             <div
                 className="container d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center position-relative gap-2">
@@ -60,7 +60,7 @@ export function PaginationButton() {
                     <div className="d-flex align-items-center gap-2">
                         <input
                             type="text"
-                            className="form-control form-control-sm bg-dark text-white border-secondary"
+                            className="form-control form-control-sm bg-black text-white border-secondary"
                             placeholder="Enter text..."
                             style={{maxWidth: '200px', width: '120px'}}
                             id="blacklist-input"
@@ -94,15 +94,15 @@ export function PaginationButton() {
                         </svg>
                     </button>
                 </div>
-                <a
-                    href={copyrightLink}
-                    target="_blank"
-                    className="nav-link p-0 d-none d-sm-flex align-items-center text-end"
-                    rel="noopener noreferrer"
-                    style={{color: 'white', fontSize: '0.7rem', maxWidth: '30%'}}
-                >
-                    {copyrightText && <span className="text-secondary text-wrap">{copyrightText}</span>}
-                </a>
+                {/*<a*/}
+                {/*    href={copyrightLink}*/}
+                {/*    target="_blank"*/}
+                {/*    className="nav-link p-0 d-none d-sm-flex align-items-center text-end"*/}
+                {/*    rel="noopener noreferrer"*/}
+                {/*    style={{color: 'white', fontSize: '0.7rem', maxWidth: '30%'}}*/}
+                {/*>*/}
+                {/*    {copyrightText && <span className="text-secondary text-wrap">{copyrightText}</span>}*/}
+                {/*</a>*/}
             </div>
         </footer>
     );

@@ -24,7 +24,7 @@ export default async function Header({title}: { title: string }) {
     const userHandle = "chrome199523.bsky.social";
     return (
         <nav
-            className="navbar navbar-dark bg-dark bg-opacity-75 fixed-top px-3"
+            className="navbar navbar-dark fixed-top px-3"
             style={{zIndex: 1000}}>
             <div className="container-fluid d-flex flex-wrap align-items-center">
                 <a className="navbar-brand me-3" href={`https://bsky.app/profile/${userHandle}`} target="_blank"
@@ -40,7 +40,7 @@ export default async function Header({title}: { title: string }) {
                     </div>
                 </a>
 
-                <div id={"loading-spinner"} className="spinner-border text-primary bg-dark bg-opacity-75" role="status">
+                <div id={"loading-spinner"} className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
 

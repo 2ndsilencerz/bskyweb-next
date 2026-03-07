@@ -81,6 +81,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
     const animationTemplate = 'flash 0.3s ease-in-out infinite';
+    const rainbowTemplate = 'rainbow 3s linear infinite';
 
     if (!post || !isVisible) return <></>;
 
@@ -218,7 +219,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
             <div
-                className={`card ${isLiked ? 'bg-secondary' : 'bg-dark'} ${isLiked ? 'bg-opacity-50' : 'bg-opacity-75'} text-white rounded-3 overflow-hidden border-0`}>
+                className={`card ${isLiked ? 'bg-secondary' : 'bg-black'} ${isLiked ? 'bg-opacity-25' : ''} text-white rounded-3 overflow-hidden border-0`}>
                 <div className="card-body p-3">
                     <div className="d-grid align-items-start">
                         {/* Content Area */}
@@ -241,18 +242,17 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             </a>
 
                             <div className="d-flex justify-content-between align-items-start flex-grow-1">
-                                <div>
+                                <div style={{
+                                    background: isFollowing ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
+                                    backgroundSize: '200% 100%',
+                                    WebkitBackgroundClip: isFollowing ? 'text' : 'initial',
+                                    backgroundClip: isFollowing ? 'text' : 'initial',
+                                    WebkitTextFillColor: isFollowing ? 'transparent' : 'white',
+                                    animation: isFollowing ? rainbowTemplate : 'none'
+                                }}>
                                     <a href={`https://bsky.app/profile/${authorHandle}`} target="_blank"
                                        rel="noopener noreferrer"
-                                       className="text-decoration-none fw-bold small"
-                                       style={{
-                                           background: isFollowing ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
-                                           backgroundSize: '200% 100%',
-                                           WebkitBackgroundClip: isFollowing ? 'text' : 'initial',
-                                           backgroundClip: isFollowing ? 'text' : 'initial',
-                                           WebkitTextFillColor: isFollowing ? 'transparent' : 'white',
-                                           animation: isFollowing ? 'rainbow 3s linear infinite' : 'none'
-                                       }}>
+                                       className="text-decoration-none fw-bold small">
                                         {authorDisplayName}
                                     </a>
                                     <div className="text-secondary small text-break">
@@ -313,7 +313,16 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 </div>
                             </div>
                         </div>
-                        <div className={"overflow-hidden"}>
+                        <div className={"overflow-hidden"}
+                             style={{
+                                 background: isLiked ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
+                                 backgroundSize: '200% 100%',
+                                 WebkitBackgroundClip: isLiked ? 'text' : 'initial',
+                                 backgroundClip: isLiked ? 'text' : 'initial',
+                                 WebkitTextFillColor: isLiked ? 'transparent' : 'white',
+                                 animation: isLiked ? rainbowTemplate : 'none'
+                             }}
+                        >
                             {/* Post Body */}
                             <div className="mt-2 small lh-base text-break">
                                 {convertHashtagsToLinks(postText)}
@@ -342,9 +351,9 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                 {/*    {postComment}*/}
                                 {/*</a>*/}
                                 <button
-                                    className={`btn btn-sm rounded-pill px-3 ${isLiked ? '' : ''} border-0`}
+                                    className={`btn btn-sm rounded-pill px-3 ${isLiked ? '' : ''} border-0 btn-outline-secondary`}
                                     style={{
-                                        animation: isLikeAnimating ? animationTemplate : ''
+                                        animation: isLikeAnimating ? animationTemplate : isLiked ? rainbowTemplate : 'none',
                                     }}
                                     onClick={handleLike} disabled={isLiked}>
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill={isLiked ? '#FF007F' : 'none'}
@@ -355,7 +364,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                                     {/*{postLikes}*/}
                                 </button>
                                 <button
-                                    className={`btn btn-sm rounded-pill px-3 ${isBookmarked ? '' : ''} border-0`}
+                                    className={`btn btn-sm rounded-pill px-3 ${isBookmarked ? '' : ''} border-0 btn-outline-secondary`}
                                     onClick={handleBookmark} disabled={isBookmarked}
                                     style={{animation: isBookmarkAnimating ? animationTemplate : ''}}>
                                     <svg width="15" height="15" viewBox="0 0 24 24"
