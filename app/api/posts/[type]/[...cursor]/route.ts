@@ -20,6 +20,7 @@ import {getMuteList} from "@/lib/mutelist";
 import {getSavedFeeds} from "@/lib/saved-feeds";
 
 const postPerPageLimit = 10;
+const CJK_REGEX = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\u318e\uac00-\ud7a3]/;
 let blockList: string[] = [];
 let muteLists: string[] = [];
 
@@ -158,12 +159,26 @@ function checkBlacklist(text: string) {
     const blacklists = getBlacklist();
     const matchedBlacklistTerms: string[] = [];
     for (const tag of blacklists) {
-        let normalizedTag = tag;
-        if (tag.startsWith('#') && tag.length > 1) {
-            normalizedTag = tag.substring(1);
-        }
+        const isStrict = tag.startsWith('#');
+        const normalizedTag = isStrict ? tag.substring(1) : tag;
         const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+
+        let regex;
+        const hasCJK = CJK_REGEX.test(normalizedTag);
+
+        if (isStrict) {
+            // If tag starts with #, it MUST match a hashtag in the text.
+            regex = new RegExp(`(?<![\\p{L}\\p{N}])#${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+        } else {
+            if (hasCJK) {
+                // Fuzzy matching for CJK tags without #
+                regex = new RegExp(`#?${escapedTag}`, 'ui');
+            } else {
+                // Strict word boundary matching for Latin
+                regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+            }
+        }
+
         if (regex.test(text)) {
             matchedBlacklistTerms.push(tag);
         }
@@ -190,12 +205,26 @@ function checkDictionary(text: string) {
     const dictionary = getDictionary();
     const matchedDictionaryTerms: string[] = [];
     for (const tag of dictionary) {
-        let normalizedTag = tag;
-        if (tag.startsWith('#') && tag.length > 1) {
-            normalizedTag = tag.substring(1);
-        }
+        const isStrict = tag.startsWith('#');
+        const normalizedTag = isStrict ? tag.substring(1) : tag;
         const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+
+        let regex;
+        const hasCJK = CJK_REGEX.test(normalizedTag);
+
+        if (isStrict) {
+            // If tag starts with #, it MUST match a hashtag in the text.
+            regex = new RegExp(`(?<![\\p{L}\\p{N}])#${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+        } else {
+            if (hasCJK) {
+                // Fuzzy matching for CJK tags without #
+                regex = new RegExp(`#?${escapedTag}`, 'ui');
+            } else {
+                // Strict word boundary matching for Latin
+                regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+            }
+        }
+
         if (regex.test(text)) {
             matchedDictionaryTerms.push(tag);
         }
