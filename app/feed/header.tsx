@@ -3,6 +3,7 @@ import Link from "next/link";
 import {Feed, getSavedFeeds} from "@/lib/saved-feeds";
 import {JSX} from "react";
 import {getProfileInfo} from "@/lib/profile";
+import {LoadingSpinner, NotificationBadge} from "@/app/feed/header-client";
 
 export default async function Header({title}: { title: string }) {
     const profile = await getProfileInfo();
@@ -32,17 +33,11 @@ export default async function Header({title}: { title: string }) {
                     <div className="position-relative">
                         <Image alt="bsky-icon" src="https://web-cdn.bsky.app/static/favicon-32x32.png"
                                width={32} height={32} priority unoptimized decoding={"async"}/>
-                        <span
-                            id="notification-badge"
-                            className={`position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle`}>
-                                <span className={"visually-hidden"}>New notifications</span>
-                            </span>
+                        <NotificationBadge/>
                     </div>
                 </a>
 
-                <div id={"loading-spinner"} className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
+                <LoadingSpinner/>
 
                 <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
                         data-bs-target="#feedsMenuCollapse" aria-controls="feedsMenuCollapse" aria-expanded="false"

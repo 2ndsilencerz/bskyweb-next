@@ -1,8 +1,10 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
+import {useAppState} from "@/app/feed/state-context";
 
 export function PaginationButton() {
+    const {isPageLoading, setIsPageLoading} = useAppState();
     const [copyrightText, setCopyrightText] = useState<string>('');
     const copyrightTextRef = useRef('');
     const [copyrightLink, setCopyrightLink] = useState<string>('');
@@ -22,6 +24,7 @@ export function PaginationButton() {
 
     const handleNextPage = () => {
         // Dispatch custom event that page.tsx will listen for
+        setIsPageLoading(true);
         window.dispatchEvent(new CustomEvent('load-next-page'));
     };
 
@@ -81,11 +84,12 @@ export function PaginationButton() {
                         className="btn btn-sm rounded-pill px-4 d-flex align-items-center text-white border-0"
                         id="next-page-bottom"
                         title="Next Page"
-                        onClick={handleNextPage}
+                        onClick={() => handleNextPage()}
                         style={{
                             // transition: 'opacity 0.3s',
                             // opacity: isNextPageAnimating ? 0.3 : 1
                         }}
+                        disabled={isPageLoading}
                     >
                         <span className="me-2">Next Page</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"

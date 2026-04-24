@@ -4,12 +4,13 @@ import Header from "@/app/feed/header";
 import React from "react";
 import BootstrapClient from "@/app/feed/bootstrap-client";
 import "bootstrap/dist/css/bootstrap.min.css"
+import {AppStateProvider} from "@/app/feed/state-context";
 
 export default async function MainLayout(title: string, children: React.ReactNode) {
     const bgImage = //await getBackground() ||
         ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="];
     return (
-        <>
+        <AppStateProvider>
             <BootstrapClient/>
             <div>
                 <div className="fixed-top vw-100 vh-100 z-0">
@@ -29,6 +30,6 @@ export default async function MainLayout(title: string, children: React.ReactNod
                     <PaginationButton/>
                 </div>
             </div>
-        </>
+        </AppStateProvider>
     )
 }

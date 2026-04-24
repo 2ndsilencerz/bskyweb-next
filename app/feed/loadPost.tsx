@@ -5,8 +5,10 @@ import {PostCard} from "@/app/feed/postcard";
 import {JSX, useEffect, useRef, useState} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import Loading from "@/app/feed/loading";
+import {useAppState} from "@/app/feed/state-context";
 
 export default function LoadPost({type}: { type: string }) {
+    const {setIsPageLoading, setHaveNewNotifications} = useAppState();
     const feedPath = type;
     const [feedPage, setFeedPage] = useState<JSX.Element>(loadingDiv());
     const cursorRef = useRef<string>(''); // Add this
@@ -14,7 +16,8 @@ export default function LoadPost({type}: { type: string }) {
     const uuidRef = useRef<string>('');
 
     const loadNextPage = async (currentCursor: string): Promise<JSX.Element> => {
-        document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'block');
+        setIsPageLoading(true);
+        // document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'block');
         // If you want to use the catch-all route via URL:
         const url = currentCursor
             ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
@@ -29,14 +32,14 @@ export default function LoadPost({type}: { type: string }) {
         });
 
         if (!res.ok) {
-            document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
+            setIsPageLoading(false);
             return (<></>);
         }
         const postReq = await res.json();
 
         if (!postReq || !postReq.data) {
             console.log('No data received from API, returning null...');
-            document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
+            setIsPageLoading(false);
             return (<></>);
         }
 
@@ -57,14 +60,10 @@ export default function LoadPost({type}: { type: string }) {
         window.scrollTo({top: 0, behavior: 'smooth'});
         fetch('/api/profile/notification').then(res => res.json()).then(notification => {
             console.log(notification.notifications ? `New notifications available` : `No new notifications`);
-            if (notification.notifications) {
-                document.getElementById('notification-badge')?.attributeStyleMap.set('display', 'block');
-            } else {
-                document.getElementById('notification-badge')?.attributeStyleMap.set('display', 'none');
-            }
+            setHaveNewNotifications(!!notification.notifications);
         });
 
-        document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'none');
+        setIsPageLoading(false);
         return constructFeedPage(postReq.data.feed);
     }
 

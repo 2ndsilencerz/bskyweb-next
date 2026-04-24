@@ -14,19 +14,24 @@
     "@atproto/lexicon": "^0.2.2",
     "@atproto/repo": "^0.3.2",
     "@atproto/syntax": "^0.1.2",
+    "@atproto/xrpc-server": "^0.7.9",
+    "better-sqlite3": "^12.8.0",
     "bootstrap": "^5.3.8",
     "deepl-node": "^1.24.0",
+    "kysely": "^0.28.14",
     "next": "^16.1.5",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "typescript": "^5"
+    "inquirer": "^12.0.1",
+    "typescript": "^5.9.3"
   }
 }

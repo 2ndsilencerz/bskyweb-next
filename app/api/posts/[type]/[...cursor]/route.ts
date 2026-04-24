@@ -158,7 +158,14 @@ function checkBlacklist(text: string) {
     const blacklists = getBlacklist();
     const matchedBlacklistTerms: string[] = [];
     for (const tag of blacklists) {
-        if (text.toLowerCase().includes(tag.toLowerCase())) {
+        let normalizedTag = tag;
+        if (tag.startsWith('#') && tag.length > 1) {
+            normalizedTag = tag.substring(1);
+        }
+        const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const hasCJK = /[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(normalizedTag);
+        const regex = hasCJK ? new RegExp(escapedTag, 'i') : new RegExp(`\\b${escapedTag}\\b`, 'i');
+        if (regex.test(text)) {
             matchedBlacklistTerms.push(tag);
         }
     }
@@ -184,7 +191,14 @@ function checkDictionary(text: string) {
     const dictionary = getDictionary();
     const matchedDictionaryTerms: string[] = [];
     for (const tag of dictionary) {
-        if (text.toLowerCase().includes(tag.toLowerCase())) {
+        let normalizedTag = tag;
+        if (tag.startsWith('#') && tag.length > 1) {
+            normalizedTag = tag.substring(1);
+        }
+        const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const hasCJK = /[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(normalizedTag);
+        const regex = hasCJK ? new RegExp(escapedTag, 'i') : new RegExp(`\\b${escapedTag}\\b`, 'i');
+        if (regex.test(text)) {
             matchedDictionaryTerms.push(tag);
         }
     }
