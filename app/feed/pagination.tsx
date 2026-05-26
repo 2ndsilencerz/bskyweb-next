@@ -1,26 +1,27 @@
 'use client';
 
-import {useEffect, useRef, useState} from "react";
+// import {useEffect, useRef, useState} from "react";
 import {useAppState} from "@/app/feed/state-context";
+import axios from "axios";
 
 export function PaginationButton() {
     const {isPageLoading, setIsPageLoading} = useAppState();
-    const [copyrightText, setCopyrightText] = useState<string>('');
-    const copyrightTextRef = useRef('');
-    const [copyrightLink, setCopyrightLink] = useState<string>('');
-    const copyrightLinkRef = useRef('');
-    useEffect(() => {
-        fetch('/api/background')
-            .then(res => res.json())
-            .then((data) => {
-                const text = data.images[0].copyright;
-                const link = data.images[0].copyrightlink;
-                setCopyrightText(text);
-                copyrightTextRef.current = text;
-                setCopyrightLink(link);
-                copyrightLinkRef.current = link;
-            }).catch(console.error);
-    }, []);
+    // const [copyrightText, setCopyrightText] = useState<string>('');
+    // const copyrightTextRef = useRef('');
+    // const [copyrightLink, setCopyrightLink] = useState<string>('');
+    // const copyrightLinkRef = useRef('');
+    // useEffect(() => {
+    //     fetch('/api/background')
+    //         .then(res => res.json())
+    //         .then((data) => {
+    //             const text = data.images[0].copyright;
+    //             const link = data.images[0].copyrightlink;
+    //             setCopyrightText(text);
+    //             copyrightTextRef.current = text;
+    //             setCopyrightLink(link);
+    //             copyrightLinkRef.current = link;
+    //         }).catch(console.error);
+    // }, []);
 
     const handleNextPage = () => {
         // Dispatch custom event that page.tsx will listen for
@@ -36,17 +37,18 @@ export function PaginationButton() {
                 method = 'DELETE';
                 input.value = input.value.trim().substring(1);
             }
-            fetch(`/api/moderation/mute`, {
+            axios({
+                url: `/api/moderation/mute`,
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'word': encodeURIComponent(input.value.trim())
                 },
-                body: JSON.stringify({
+                data: JSON.stringify({
                     uri: input.value.trim()
                 })
             }).then((res) => {
-                if (!res.ok) return;
+                if (res.status !== 200) return;
                 console.log(`Success`);
                 input.value = '';
             });

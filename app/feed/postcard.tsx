@@ -15,6 +15,7 @@ import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/emb
 import Image from "next/image";
 import {JSX, useRef, useState} from "react";
 import {TextResult} from "deepl-node";
+import axios from "axios";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -105,15 +106,14 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleTranslate = async () => {
         setIsTranslateAnimating(true);
         translateAnimatedRef.current = true;
-        const res = await fetch('/api/post/translate', {
-            method: 'POST',
+        const res = await axios.post('/api/post/translate', {text: postText}, {
             headers: {
-                uri: postUri,
+                'uri': postUri,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({text: postText})
         });
-        if (res.ok) {
-            const translated = await res.json() as TextResult;
+        if (res.status === 200) {
+            const translated = await res.data as TextResult;
             setTranslatedFrom('From: ' + translated.detectedSourceLang);
             translatedFromRef.current = translated.detectedSourceLang;
             setTranslatedText(translated.text);
@@ -128,14 +128,13 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleMuteAuthor = async () => {
         setIsMuteAnimating(true);
         muteAnimatedRef.current = true;
-        const res = await fetch('/api/profile/mute', {
-            method: 'POST',
+        const res = await axios.post('/api/profile/mute', {uri: post.author.handle}, {
             headers: {
-                uri: post.author.handle,
+                'uri': post.author.handle,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({uri: post.author.handle})
         });
-        if (res.ok) {
+        if (res.status === 200) {
             setIsVisible(false);
             return;
         } else alert('Failed to mute author');
@@ -146,14 +145,13 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleBlockAuthor = async () => {
         setIsBlockAnimating(true);
         blockAnimatedRef.current = true;
-        const res = await fetch('/api/profile/block', {
-            method: 'POST',
+        const res = await axios.post('/api/profile/block', {uri: post.author.did}, {
             headers: {
-                uri: post.author.did,
+                'uri': post.author.did,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({uri: post.author.did})
         });
-        if (res.ok) {
+        if (res.status === 200) {
             setIsVisible(false);
             return;
         } else alert('Failed to block author');
@@ -164,14 +162,13 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleMutePost = async () => {
         setIsDeleteAnimating(true);
         deleteAnimatedRef.current = true;
-        const res = await fetch('/api/post/mute', {
-            method: 'POST',
+        const res = await axios.post('/api/post/mute', {uri: postUri}, {
             headers: {
-                uri: postUri,
+                'uri': postUri,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({uri: postUri})
         });
-        if (res.ok) {
+        if (res.status === 200) {
             setIsVisible(false);
             return;
         } else alert('Failed to mute post');
@@ -182,15 +179,14 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleLike = async () => {
         setIsLikeAnimating(true);
         likeAnimatedRef.current = true;
-        const res = await fetch('/api/post/like', {
-            method: 'POST',
+        const res = await axios.post('/api/post/like', {uri: postUri}, {
             headers: {
-                uri: postUri,
+                'uri': postUri,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({uri: postUri})
         });
-        const resBody = await res.json();
-        if (res.ok && resBody.success) {
+        const resBody = await res.data;
+        if (res.status === 200 && resBody.success) {
             setIsLiked(true);
             setPostLikes(post.likeCount ? post.likeCount + 1 : 0);
         } else alert('Failed to like post');
@@ -201,15 +197,14 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const handleBookmark = async () => {
         setIsBookmarkAnimating(true);
         bookmarkAnimatedRef.current = true;
-        const res = await fetch('/api/post/bookmark', {
-            method: 'POST',
+        const res = await axios.post('/api/post/bookmark', {uri: postUri}, {
             headers: {
-                uri: postUri,
+                'uri': postUri,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({uri: postUri})
         });
-        const resBody = await res.json();
-        if (res.ok && resBody.success) {
+        const resBody = await res.data;
+        if (res.status === 200 && resBody.success) {
             setIsBookmarked(true);
         } else alert('Failed to bookmark post');
         setIsBookmarkAnimating(false);

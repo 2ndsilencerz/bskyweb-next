@@ -7,8 +7,12 @@ import {AtpAgent} from "@atproto/api";
 
 interface ListData {
     blacklist: string[];
-    dictionary: string[];
+    dictionary: dictionary;
     ignoreList: string[];
+}
+
+interface dictionary {
+    [key: string]: string[];
 }
 
 const LIST_FILE_PATH = path.join(process.cwd(), 'list.json');
@@ -16,7 +20,7 @@ const CACHE_TTL_LOCAL = 60 * 1000; // 1 minute
 
 type BlacklistState = {
     cachedBlacklist: string[];
-    cachedDictionary: string[];
+    cachedDictionary: dictionary;
     lastLoaded: number;
     schedulerStarted: boolean;
     instanceId: string;
@@ -29,7 +33,7 @@ function getState(): BlacklistState {
     if (!g.__blacklistState) {
         g.__blacklistState = {
             cachedBlacklist: [],
-            cachedDictionary: [],
+            cachedDictionary: {},
             lastLoaded: 0,
             schedulerStarted: false,
             isLocalUpdateRunning: false,
@@ -104,7 +108,7 @@ export function getBlacklist(): string[] {
     return state.cachedBlacklist;
 }
 
-export function getDictionary(): string[] {
+export function getDictionary(): dictionary {
     return getState().cachedDictionary;
 }
 
@@ -160,8 +164,7 @@ function getBlacklistFromLocalAndMergeWithCache() {
     state.cachedBlacklist.push(...data.blacklist);
     state.cachedBlacklist = removeDuplicatesAndSort(state.cachedBlacklist);
 
-    state.cachedDictionary.push(...data.dictionary);
-    state.cachedDictionary = removeDuplicatesAndSort(state.cachedDictionary);
+    state.cachedDictionary = data.dictionary;
 
     console.log(`Blacklist from cache updated. Count: ${state.cachedBlacklist.length}`);
 }

@@ -8,13 +8,32 @@ import {LoadingSpinner, NotificationBadge} from "@/app/feed/header-client";
 export default async function Header({title}: { title: string }) {
     const profile = await getProfileInfo();
     const feeds: Feed[] = [];
+    const placeholderImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     feeds.push({
         uri: "following",
         title: "Following",
-        image: profile?.avatar || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        image: profile?.avatar || placeholderImg,
     });
     const savedFeeds = await getSavedFeeds();
     feeds.push(...savedFeeds);
+    const wuwaFeed: Feed = {
+        uri: 'wuwa',
+        title: 'Wuthering Waves',
+        image: placeholderImg,
+    }
+    feeds.push(wuwaFeed);
+    const mikuFeed: Feed = {
+        uri: 'miku',
+        title: 'Hatsune Miku',
+        image: placeholderImg,
+    }
+    feeds.push(mikuFeed);
+    const touhouFeed: Feed = {
+        uri: 'touhou',
+        title: 'Touhou Project',
+        image: placeholderImg,
+    }
+    feeds.push(touhouFeed);
     const feedsMenu = feeds.map((feed) => {
         return <FeedMenu
             key={feed.uri}
@@ -60,10 +79,9 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
     const titles: Record<string, string> = {
         'following': 'Following',
         'for-you': 'For You',
-        'wuwa-cf': 'Wuthering Waves',
-        'hatsunemiku-cf': 'Hatsune Miku',
-        'touhou-cf': 'Touhou Project',
-        'prsk-custom': 'Colorful Stage'
+        'wuwa': 'Wuthering Waves',
+        'miku': 'Hatsune Miku',
+        'touhou': 'Touhou Project',
     };
     const feedTitle = titles[feedName] || feedName.replace('-', ' ');
     const isActive = feedTitle.includes(title);

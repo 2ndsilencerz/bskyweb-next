@@ -56,9 +56,9 @@ export function startBackgroundFetcherScheduler() {
 
     console.log('Starting Background Fetcher Scheduler...');
 
-    getBackground().catch(e => console.error(`Error loading: ${e}`));
+    // getBackground().catch(e => console.error(`Error loading: ${e}`));
 
     setInterval(() => {
-        getBackground().catch(e => console.error(`Error loading: ${e}`));
+        // getBackground().catch(e => console.error(`Error loading: ${e}`));
     }, 60 * 60 * 1000 * 24);
 }

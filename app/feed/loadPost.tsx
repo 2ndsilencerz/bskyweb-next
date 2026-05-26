@@ -6,6 +6,7 @@ import {JSX, useEffect, useRef, useState} from "react";
 import {FeedViewPost, PostView} from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import Loading from "@/app/feed/loading";
 import {useAppState} from "@/app/feed/state-context";
+import axios from "axios";
 
 export default function LoadPost({type}: { type: string }) {
     const {setIsPageLoading, setHaveNewNotifications} = useAppState();
@@ -19,11 +20,15 @@ export default function LoadPost({type}: { type: string }) {
         setIsPageLoading(true);
         // document.getElementById('loading-spinner')?.attributeStyleMap.set('display', 'block');
         // If you want to use the catch-all route via URL:
-        const url = currentCursor
+        let url = currentCursor
             ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
             : `/api/posts/${feedPath}/`;
 
-        const res = await fetch(url, {
+        if (feedPath !== 'foryou' && feedPath !== 'following' && feedPath !== 'whats-hot') {
+            url = url.replace('/api/posts/', '/api/post/search/');
+        }
+
+        const res = await axios.get(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -31,11 +36,11 @@ export default function LoadPost({type}: { type: string }) {
             }
         });
 
-        if (!res.ok) {
+        if (!res || res.status !== 200) {
             setIsPageLoading(false);
             return (<></>);
         }
-        const postReq = await res.json();
+        const postReq = await res.data;
 
         if (!postReq || !postReq.data) {
             console.log('No data received from API, returning null...');
@@ -44,7 +49,9 @@ export default function LoadPost({type}: { type: string }) {
         }
 
         cursorRef.current = postReq.data.cursor as string; // Keep ref in sync
-        if (postReq.data.feed.length === 0) return await loadNextPage(cursorRef.current);
+        let isFeed = false;
+        if (postReq.data.feed) isFeed = true;
+        if (isFeed && postReq.data.feed.length === 0) return await loadNextPage(cursorRef.current);
 
         // console.log('Processing new page data...')
         // console.log(postReq.data.cursor);
@@ -58,16 +65,19 @@ export default function LoadPost({type}: { type: string }) {
         // console.log(postReq.data.feed);
         window.dispatchEvent(new CustomEvent('load-next-page-finished'));
         window.scrollTo({top: 0, behavior: 'smooth'});
-        fetch('/api/profile/notification').then(res => res.json()).then(notification => {
+        axios.get('/api/profile/notification').then(res => res.data).then(notification => {
             console.log(notification.notifications ? `New notifications available` : `No new notifications`);
             setHaveNewNotifications(!!notification.notifications);
         });
 
         setIsPageLoading(false);
-        return constructFeedPage(postReq.data.feed);
+        if (isFeed) {
+            return constructFeedPage(postReq.data.feed);
+        }
+        return constructFeedPage(postReq.data.posts);
     }
 
-    const constructFeedPage = (postData: FeedViewPost[]): JSX.Element => {
+    const constructFeedPage = (postData: FeedViewPost[] | PostView[]): JSX.Element => {
         // if (!postData) {
         //     console.log('No post data available, returning loading state...');
         //     console.log(postData);
@@ -77,11 +87,17 @@ export default function LoadPost({type}: { type: string }) {
         return (
             <div className="feed-container" id={uuid}>
                 {postData.map((item, index) => {
-                    if (!item?.post) return null;
+                    if ("post" in item) {
+                        if (!item?.post) return null;
 
-                    // Convert the complex ATProto object into a plain serializable JSON object
-                    const serializablePost = JSON.parse(JSON.stringify(item.post));
-                    return callPostCard(item.post.uri, index, serializablePost);
+                        // Convert the complex ATProto object into a plain serializable JSON object
+                        const serializablePost = JSON.parse(JSON.stringify(item.post));
+                        return callPostCard(item.post.uri, index, serializablePost);
+                    } else {
+                        // Convert the complex ATProto object into a plain serializable JSON object
+                        const serializablePost = JSON.parse(JSON.stringify(item));
+                        return callPostCard(item.uri, index, serializablePost);
+                    }
                 })}
             </div>
         );

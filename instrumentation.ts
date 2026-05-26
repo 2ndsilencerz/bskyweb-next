@@ -2,6 +2,8 @@ import {getAgent} from "@/lib/bsky";
 
 export async function register() {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
+        // const {startDB} = await import('@/lib/db');
+        // await startDB(process.env.FEEDGEN_SQLITE_LOCATION as string);
         await getAgent();
         const {startBlacklistScheduler} = await import('@/lib/blacklist');
         const {startBlocklistScheduler} = await import('@/lib/blocklist');
@@ -17,5 +19,7 @@ export async function register() {
         startNotificationScheduler();
         startSavedFeedScheduler();
         startProfileFetcherScheduler();
+        // const {startSearching} = await import('@/lib/post-fetcher');
+        // void startSearching().catch(console.error);
     }
 }

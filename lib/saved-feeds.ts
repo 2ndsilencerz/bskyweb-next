@@ -48,7 +48,12 @@ export async function getSavedFeeds() {
 
     state.savedFeeds = [];
     for (const feed of savedFeed) {
-        const feedDesc = await agent.app.bsky.feed.getFeedGenerator({feed: feed.value});
+        const feedDesc = await agent.app.bsky.feed.getFeedGenerator({feed: feed.value})
+            .catch(() => {
+            })
+            .then(res => res);
+        if (!feedDesc) continue;
+        if (state.savedFeeds.some(f => f.uri === feedDesc.data.view.uri)) continue;
         state.savedFeeds.push({
             uri: feedDesc.data.view.uri,
             title: feedDesc.data.view.displayName,

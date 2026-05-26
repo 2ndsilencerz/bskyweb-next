@@ -142,6 +142,15 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                     }
                     return true;
                 });
+                const seenUris = new Set<string>();
+                feedRes.data.feed = feedRes.data.feed.filter((post) => {
+                    if (seenUris.has(post.post.uri)) {
+                        console.log(`Removing duplicate post: ${post.post.uri}`);
+                        return false;
+                    }
+                    seenUris.add(post.post.uri);
+                    return true;
+                });
                 return feedRes;
             } catch (error) {
                 console.error(`Attempt ${attempt} failed:`, error);
@@ -155,8 +164,13 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
     return false;
 }
 
-function checkBlacklist(text: string) {
-    const blacklists = getBlacklist();
+export function checkBlacklist(text: string, suppliedBlacklist?: string[]) {
+    let blacklists;
+    if (suppliedBlacklist != null) {
+        blacklists = suppliedBlacklist;
+    } else {
+        blacklists = getBlacklist();
+    }
     const matchedBlacklistTerms: string[] = [];
     for (const tag of blacklists) {
         const isStrict = tag.startsWith('#');
@@ -189,13 +203,19 @@ function checkBlacklist(text: string) {
     return result;
 }
 
-function checkBlocklist(did: string) {
+export function checkBlocklist(did: string, suppliedBlocklist?: string[]) {
+    if (blockList.length === 0 && suppliedBlocklist != null) {
+        blockList = suppliedBlocklist;
+    }
     const result = blockList.some(word => did.includes(word.toLowerCase()));
     if (result) console.log(`From ${blockList.length} Blocklisted account found: ${did}`);
     return result;
 }
 
-function checkMuteList(did: string) {
+export function checkMuteList(did: string, suppliedMuteList?: string[]) {
+    if (muteLists.length === 0 && suppliedMuteList != null) {
+        muteLists = suppliedMuteList;
+    }
     const result = muteLists.some(word => word.includes(did.toLowerCase()));
     if (result) console.log(`From ${muteLists.length} Muted account found: ${did}`);
     return result;
@@ -204,29 +224,31 @@ function checkMuteList(did: string) {
 function checkDictionary(text: string) {
     const dictionary = getDictionary();
     const matchedDictionaryTerms: string[] = [];
-    for (const tag of dictionary) {
-        const isStrict = tag.startsWith('#');
-        const normalizedTag = isStrict ? tag.substring(1) : tag;
-        const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const key in dictionary) {
+        for (const tag of dictionary[key]) {
+            const isStrict = tag.startsWith('#');
+            const normalizedTag = isStrict ? tag.substring(1) : tag;
+            const escapedTag = normalizedTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        let regex;
-        const hasCJK = CJK_REGEX.test(normalizedTag);
+            let regex;
+            const hasCJK = CJK_REGEX.test(normalizedTag);
 
-        if (isStrict) {
-            // If tag starts with #, it MUST match a hashtag in the text.
-            regex = new RegExp(`(?<![\\p{L}\\p{N}])#${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
-        } else {
-            if (hasCJK) {
-                // Fuzzy matching for CJK tags without #
-                regex = new RegExp(`#?${escapedTag}`, 'ui');
+            if (isStrict) {
+                // If tag starts with #, it MUST match a hashtag in the text.
+                regex = new RegExp(`(?<![\\p{L}\\p{N}])#${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
             } else {
-                // Strict word boundary matching for Latin
-                regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+                if (hasCJK) {
+                    // Fuzzy matching for CJK tags without #
+                    regex = new RegExp(`#?${escapedTag}`, 'ui');
+                } else {
+                    // Strict word boundary matching for Latin
+                    regex = new RegExp(`(?<![\\p{L}\\p{N}])#?${escapedTag}(?![\\p{L}\\p{N}])`, 'ui');
+                }
             }
-        }
 
-        if (regex.test(text)) {
-            matchedDictionaryTerms.push(tag);
+            if (regex.test(text)) {
+                matchedDictionaryTerms.push(tag);
+            }
         }
     }
     const result = matchedDictionaryTerms.length > 0;
