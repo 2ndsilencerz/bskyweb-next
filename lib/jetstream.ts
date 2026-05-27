@@ -74,16 +74,16 @@ export function startJetstreamCollector() {
                 }
             }
         } catch (err) {
-            console.error('Error processing Jetstream message:', err);
+            console.error('[Jetstream] Error processing Jetstream message:', err);
         }
     });
 
     ws.on('error', (err) => {
-        console.error('Jetstream WebSocket error:', err);
+        console.error('[Jetstream] WebSocket error:', err);
     });
 
     ws.on('close', () => {
-        console.log('Jetstream connection closed. Reconnecting in 5s...');
+        console.log('[Jetstream] connection closed. Reconnecting in 5s...');
         setTimeout(startJetstreamCollector, 5000);
     });
 }
@@ -97,6 +97,8 @@ async function shouldCollect(post: any): Promise<boolean> {
     if (!keywords.some(key => text.includes(dictionary[key]))) {
         return false;
     }
+
+    console.log(`[Jetstream] Post contains keyword, checking further...`)
 
     // const allTags = Object.values(dictionary).flat();
     const blockList = await getBlocklist();
@@ -150,11 +152,11 @@ async function shouldCollect(post: any): Promise<boolean> {
 async function saveToDb(post: { uri: string; cid: string; indexedAt: string; createdAt: string, tag: string }) {
     const db = getDB();
     try {
-        void db.insertInto('posts')
+        await db.insertInto('posts')
             .values(post)
             .onConflict(oc => oc.column('uri').doNothing())
-            .execute().then(() => console.log(`Post saved to DB: ${post.uri}`));
+            .execute().then(() => console.log(`[Jetstream] Post saved to DB: ${post.uri}`));
     } catch (err) {
-        console.error('Failed to save post to DB:', err);
+        console.error('[Jetstream] Failed to save post to DB:', err);
     }
 }

@@ -51,7 +51,6 @@ export async function posts(cursor: string, type: string, since: string): Promis
         // console.log(`Fetching feed with q: ${type} cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                console.log(`Fetching feed with q: ${type} cursor: ${cursor} until: ${since}`);
                 const feedRes = await agent.app.bsky.feed.searchPosts({
                     q: '#' + type,
                     cursor: cursor !== 'x' ? cursor : undefined,

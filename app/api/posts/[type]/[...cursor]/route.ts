@@ -202,7 +202,7 @@ export function checkBlacklist(text: string, suppliedBlacklist?: string[]) {
         }
     }
     const result = matchedBlacklistTerms.length > 0;
-    if (result) console.log(`Blacklisted word found: ${matchedBlacklistTerms.join(', ')}`);
+    // if (result) console.log(`Blacklisted word found: ${matchedBlacklistTerms.join(', ')}`);
     return result;
 }
 
@@ -211,7 +211,7 @@ export function checkBlocklist(did: string, suppliedBlocklist?: string[]) {
         blockList = suppliedBlocklist;
     }
     const result = blockList.some(word => did.includes(word.toLowerCase()));
-    if (result) console.log(`Blocklisted account found: ${did}`);
+    // if (result) console.log(`Blocklisted account found: ${did}`);
     return result;
 }
 
@@ -220,7 +220,7 @@ export function checkMuteList(did: string, suppliedMuteList?: string[]) {
         muteLists = suppliedMuteList;
     }
     const result = muteLists.some(word => word.includes(did.toLowerCase()));
-    if (result) console.log(`Muted account found: ${did}`);
+    // if (result) console.log(`Muted account found: ${did}`);
     return result;
 }
 

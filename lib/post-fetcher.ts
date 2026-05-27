@@ -3,6 +3,7 @@ import {getDB} from "@/lib/db";
 import {getDictionary} from "@/lib/blacklist";
 import axios, {AxiosResponse} from "axios";
 import {LastState} from "@/lib/db/schema";
+import {randomUUID} from "node:crypto";
 
 export async function startSearching() {
     console.log('Starting post search');
@@ -20,23 +21,23 @@ export async function startSearching() {
             .select(['cursor'])
             .where('q', '=', tag)
             .executeTakeFirst() as LastState;
-        void searchIndefinitely(tag, '', lastState ? lastState.cursor : '').catch(console.error);
+        void searchIndefinitely(tag, '', '').catch(console.error);
     }
 }
 
 export async function searchIndefinitely(q: string, cursor: string, since: string) {
     console.log(`Starting indefinite search for tag: ${q}`);
-    let newSince;
-    let newCursor = '';
+    // let newSince;
+    // let newCursor = '';
     while (true) {
         // console.log(`Search for tag: ${q} with cursor: ${cursor} and since: ${since}`);
-        if (!newSince || newSince === '') {
-            console.log(`Tracing new post for tag: ${q} with cursor: ${cursor} and since: ${since}`);
-            const newResult = await searchPost(q, newCursor, '', true);
-            newCursor = newResult.cursor ? newResult.cursor : '';
-            newSince = new Date(newResult.since) < new Date(since) ? newResult.since : '';
-            await new Promise(resolve => setTimeout(resolve, 5000));
-        }
+        // if (!newSince || newSince === '') {
+        //     console.log(`Tracing new post for tag: ${q} with cursor: ${cursor} and since: ${since}`);
+        //     const newResult = await searchPost(q, newCursor, '', true);
+        //     newCursor = newResult.cursor ? newResult.cursor : '';
+        //     newSince = new Date(newResult.since) < new Date(since) ? newResult.since : '';
+        //     await new Promise(resolve => setTimeout(resolve, 5000));
+        // }
         const result = await searchPost(q, cursor, since);
         cursor = result.cursor ? result.cursor : '';
         // console.log(`Search for tag: ${q} completed with new cursor: ${cursor} and since: ${since}`);
@@ -50,7 +51,9 @@ export async function searchPost(
     since: string,
     old?: boolean
 ) {
+    const uid = randomUUID();
     try {
+        console.log(`[${new Date().toISOString()} ${uid}] Fetching feed with cursor: ${cursor} until: ${since} q: ${q}`);
         const hostname = `http://${process.env.FEEDGEN_HOSTNAME}`;
         const res = await axios.get(`${hostname}/api/post/search/${encodeURIComponent(q)}/${encodeURIComponent(cursor)}`, {
             method: 'GET',
@@ -60,10 +63,10 @@ export async function searchPost(
                 'X-SINCE': since
             }
         }).catch((e) => {
-            console.error(`Error fetching posts: ${e.error}`);
+            console.error(`[${new Date().toISOString()} ${uid}] Error fetching posts: ${e.error}`);
         }).then(res => res as AxiosResponse);
         if (!res || res.status !== 200) {
-            console.error(`Failed to fetch posts: request returned undefined or null`);
+            console.error(`[${new Date().toISOString()} ${uid}] Failed to fetch posts: request returned undefined or null`);
             return {cursor: cursor, since: since};
         }
         const postReq = await res.data;
@@ -71,13 +74,25 @@ export async function searchPost(
         const postViews = postReq.data.posts as PostView[];
         const db = getDB();
         if (!db) {
-            console.error('Database not initialized');
+            console.error(`[${new Date().toISOString()} ${uid}] Database not initialized`);
             return {cursor: cursor, since: since};
         }
         if (postViews.length === 0) {
-            console.log(`No new posts found for tag: ${q} with cursor: ${cursor} and since: ${since}`);
+            // console.log(`[${new Date().toISOString()} ${uid}] No new posts found for tag: ${q} with cursor: ${cursor} and since: ${since}. Last response cursor: ${postReq.data.cursor}.`);
+            let newCursor = '';
+            if (postReq.data.cursor && Number(postReq.data.cursor) > Number(cursor)) {
+                newCursor = postReq.data.cursor;
+            } else {
+                if (cursor) {
+                    newCursor = cursor;
+                } else {
+                    newCursor = '0';
+                }
+                newCursor = (Number(newCursor) + 25).toString();
+            }
+            // console.log(`[${uid}] New cursor: ${newCursor}`);
             return {
-                cursor: (Number(postReq.data.cursor ? postReq.data.cursor : cursor ? cursor : '0') + 25).toString(),
+                cursor: newCursor,
                 since: since
             };
         }
@@ -90,10 +105,10 @@ export async function searchPost(
                 tag: q,
             }).onConflict(oc => oc.column('uri').doNothing())
                 .execute()
-                .catch((e) => console.error(`Error insert db posts: ${e.error}`))
+                .catch((e) => console.error(`[${new Date().toISOString()} ${uid}] Error insert db posts: ${e.error}`))
         }
 
-        console.log(`Total updated post: ${(await db.selectFrom('posts').select('uri').distinct().execute()).length}`);
+        // console.log(`Total updated post: ${(await db.selectFrom('posts').select('uri').distinct().execute()).length}`);
         const lastPost = postReq.data.posts[postReq.data.posts.length - 1];
         const indexedAt = lastPost.indexedAt;
         if (!old) {
@@ -101,11 +116,15 @@ export async function searchPost(
                 q: q,
                 cursor: indexedAt,
             }).onConflict(oc => oc.column('q').doUpdateSet({cursor: indexedAt}))
-                .execute().catch((e) => console.error(`Error insert db last_state: ${e.error}`));
+                .execute().catch((e) => console.error(`[${new Date().toISOString()} ${uid}] Error insert db last_state: ${e.error}`));
         }
-        return {cursor: postReq.data.cursor, since: postReq.data.posts[postReq.data.posts.length - 1].indexedAt};
+        // console.log(`[${new Date().toISOString()} ${uid}] New posts found for tag: ${q} with cursor: ${cursor} and since: ${since}. Last response cursor: ${postReq.data.cursor}.`);
+        return {
+            cursor: postReq.data.cursor ? Number(postReq.data.cursor) > Number(cursor) ? postReq.data.cursor : (Number(postReq.data.cursor) + 25).toString() : cursor ? (Number(cursor) + 25).toString() : '25',
+            since: postReq.data.posts[postReq.data.posts.length - 1].indexedAt
+        };
     } catch (e) {
-        console.log(`Error searchPost with q: ${q} cursor: ${cursor}`, e);
+        console.log(`[${new Date().toISOString()} ${uid}] Error searchPost with q: ${q} cursor: ${cursor}`, e);
     }
     return {cursor: cursor, since: since};
 }
