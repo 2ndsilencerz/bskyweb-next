@@ -24,6 +24,7 @@ export default async function RootLayout(
     const titles: Record<string, string> = {
         'following': 'Following',
         'for-you': 'For You',
+        'personal': 'Personal',
         'wuwa': 'Wuthering Waves',
         'miku': 'Hatsune Miku',
         'touhou': 'Touhou Project',

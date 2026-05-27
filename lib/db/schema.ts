@@ -8,6 +8,7 @@ export type Posts = {
     indexedAt: string
     uri: string
     cid: string
+    tag: string
 }
 
 export type LastState = {

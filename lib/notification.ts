@@ -1,4 +1,5 @@
 import {getAgent} from "@/lib/bsky";
+import {AppBskyNotificationListNotifications} from "@atproto/api";
 
 type NotificationState = {
     cachedNotification: boolean;
@@ -37,9 +38,10 @@ export async function notification() {
 
         const res = await agent.listNotifications({
             limit: 10,
-        });
+        }).catch((e) => console.error(`Error fetching notifications:, ${e.error}`))
+            .then(res => res as AppBskyNotificationListNotifications.Response);
 
-        if (!res.success) return state.cachedNotification;
+        if (!res || !res.success) return state.cachedNotification;
         const notificationNotRead = res.data.notifications
             .filter(notification => !notification.isRead).length;
         if (notificationNotRead > 0) {

@@ -4,7 +4,7 @@ import LoadPost from "@/app/feed/loadPost";
 export async function generateStaticParams() {
     // List all the feed types you want to export as HTML
     // Example: /feed/foryou, /feed/discover
-    const types = ['foryou', 'discover', 'wuwa', 'miku', 'touhou'];
+    const types = ['foryou', 'discover', 'personal', 'wuwa', 'miku', 'touhou'];
 
     return types.map((type) => ({
         type: type,

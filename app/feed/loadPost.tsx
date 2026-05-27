@@ -24,9 +24,13 @@ export default function LoadPost({type}: { type: string }) {
             ? `/api/posts/${feedPath}/${encodeURIComponent(currentCursor)}`
             : `/api/posts/${feedPath}/`;
 
-        if (feedPath !== 'foryou' && feedPath !== 'following' && feedPath !== 'whats-hot') {
-            url = url.replace('/api/posts/', '/api/post/search/');
+        if (feedPath === 'personal') {
+            currentCursor = !currentCursor || currentCursor.length === 0 ? 'x' : currentCursor;
+            url = `/api/posts/personal/${encodeURIComponent(currentCursor)}`;
         }
+        // } else if (feedPath !== 'foryou' && feedPath !== 'following' && feedPath !== 'whats-hot') {
+        //     url = url.replace('/api/posts/', '/api/post/search/');
+        // }
 
         const res = await axios.get(url, {
             method: 'GET',
@@ -42,15 +46,19 @@ export default function LoadPost({type}: { type: string }) {
         }
         const postReq = await res.data;
 
-        if (!postReq || !postReq.data) {
+        if (!("cursor" in postReq) && (!postReq || !postReq.data)) {
             console.log('No data received from API, returning null...');
             setIsPageLoading(false);
             return (<></>);
         }
 
-        cursorRef.current = postReq.data.cursor as string; // Keep ref in sync
+        if (!("cursor" in postReq)) {
+            cursorRef.current = postReq.data.cursor as string; // Keep ref in sync
+        } else {
+            cursorRef.current = postReq.cursor;
+        }
         let isFeed = false;
-        if (postReq.data.feed) isFeed = true;
+        if (!("cursor" in postReq) && postReq.data.feed) isFeed = true;
         if (isFeed && postReq.data.feed.length === 0) return await loadNextPage(cursorRef.current);
 
         // console.log('Processing new page data...')
@@ -71,10 +79,14 @@ export default function LoadPost({type}: { type: string }) {
         });
 
         setIsPageLoading(false);
-        if (isFeed) {
-            return constructFeedPage(postReq.data.feed);
+        if (!("cursor" in postReq)) {
+            if (isFeed) {
+                return constructFeedPage(postReq.data.feed);
+            }
+            return constructFeedPage(postReq.data.posts);
+        } else {
+            return constructFeedPage(postReq.posts);
         }
-        return constructFeedPage(postReq.data.posts);
     }
 
     const constructFeedPage = (postData: FeedViewPost[] | PostView[]): JSX.Element => {

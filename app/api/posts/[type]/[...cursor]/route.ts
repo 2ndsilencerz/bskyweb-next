@@ -18,6 +18,7 @@ import {getBlacklist, getDictionary} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
 import {getSavedFeeds} from "@/lib/saved-feeds";
+import {getPersonalFeed} from "@/lib/personal";
 
 const postPerPageLimit = 10;
 const CJK_REGEX = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\u3131-\u318e\uac00-\ud7a3]/;
@@ -39,7 +40,10 @@ export async function GET(
     const cursor = paramsAwait.cursor[0] || undefined;
 
     const uri = req.headers.get('X-URI') || cursor || '';
-    console.log(`Base route fetching with URI: ${uri}, type: ${type}`);
+    // console.log(`Base route fetching with URI: ${uri}, type: ${type}`);
+    if (type.toLowerCase().trim() === 'personal') {
+        return NextResponse.json(await personalFeed(cursor));
+    }
     return NextResponse.json(await posts(uri, type));
 }
 
@@ -73,7 +77,7 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
         //     feedUrl = `at://did:plc:dyxukde6k2muyhg2waekj2rx/app.bsky.feed.generator/prsk-custom`
         // }
 
-        console.log(`Fetching feed with cursor: ${cursor}`);
+        // console.log(`Fetching feed with cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const feedReq: FeedRequest = {
@@ -88,11 +92,11 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                         limit: 20,
                         cursor: cursor != 'x' ? cursor : ''
                     }).catch(error => {
-                        console.error(`Attempt ${attempt} failed:`, error);
+                        console.error(`Attempt ${attempt} failed:`, error.error);
                     }).then(res => res) as AppBskyFeedGetFeed.Response;
                 } else {
                     feedRes = await agent.app.bsky.feed.getFeed(feedReq).catch(error => {
-                        console.error(`Attempt ${attempt} failed:`, error);
+                        console.error(`Attempt ${attempt} failed:`, error.error);
                     }).then(res => res) as AppBskyFeedGetFeed.Response;
                 }
 
@@ -198,8 +202,7 @@ export function checkBlacklist(text: string, suppliedBlacklist?: string[]) {
         }
     }
     const result = matchedBlacklistTerms.length > 0;
-    // console.log(`Checked against ${blacklists.length} Blacklisted words`);
-    if (result) console.log(`From ${blacklists.length} Blacklisted word found: ${matchedBlacklistTerms.join(', ')}`);
+    if (result) console.log(`Blacklisted word found: ${matchedBlacklistTerms.join(', ')}`);
     return result;
 }
 
@@ -208,7 +211,7 @@ export function checkBlocklist(did: string, suppliedBlocklist?: string[]) {
         blockList = suppliedBlocklist;
     }
     const result = blockList.some(word => did.includes(word.toLowerCase()));
-    if (result) console.log(`From ${blockList.length} Blocklisted account found: ${did}`);
+    if (result) console.log(`Blocklisted account found: ${did}`);
     return result;
 }
 
@@ -217,7 +220,7 @@ export function checkMuteList(did: string, suppliedMuteList?: string[]) {
         muteLists = suppliedMuteList;
     }
     const result = muteLists.some(word => word.includes(did.toLowerCase()));
-    if (result) console.log(`From ${muteLists.length} Muted account found: ${did}`);
+    if (result) console.log(`Muted account found: ${did}`);
     return result;
 }
 
@@ -254,4 +257,12 @@ function checkDictionary(text: string) {
     const result = matchedDictionaryTerms.length > 0;
     if (result) console.log(`From ${dictionary.length} Dictionary word found: ${matchedDictionaryTerms.join(', ')}`);
     return result;
+}
+
+async function personalFeed(currentCursor?: string) {
+    const limitPerPage = 10;
+    if (currentCursor === 'x') currentCursor = '0';
+    const cursorAsNumber = currentCursor ? parseInt(currentCursor, 10) : 0;
+    const postViews = await getPersonalFeed(limitPerPage, cursorAsNumber);
+    return {'posts': postViews, 'cursor': cursorAsNumber + limitPerPage}
 }

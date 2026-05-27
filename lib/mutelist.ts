@@ -28,10 +28,10 @@ export function startMuteListScheduler() {
 
     console.log('Starting MuteList Scheduler...');
 
-    getMuteList().catch(e => console.error(`Error loading muteList: ${e}`));
+    getMuteList().catch(e => console.error(`Error loading muteList: ${e.error}`));
 
     setInterval(() => {
-        getMuteList().catch(e => console.error(`Error loading muteList: ${e}`));
+        getMuteList().catch(e => console.error(`Error loading muteList: ${e.error}`));
     }, 10 * 60 * 1000);
 }
 

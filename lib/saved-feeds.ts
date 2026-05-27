@@ -29,9 +29,9 @@ export function startSavedFeedScheduler() {
     state.schedulerStarted = true;
 
     console.log('Starting Saved Feed Scheduler...');
-    getSavedFeeds().catch(e => console.error(`Error loading: ${e}`));
+    getSavedFeeds().catch(e => console.error(`Error loading: ${e.error}`));
     setInterval(() => {
-        getSavedFeeds().catch(e => console.error(`Error loading: ${e}`));
+        getSavedFeeds().catch(e => console.error(`Error loading: ${e.error}`));
     }, 24 * 60 * 60 * 1000);
 }
 

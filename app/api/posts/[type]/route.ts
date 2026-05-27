@@ -8,6 +8,6 @@ export async function GET(
     const {type: rawType} = await params;
     const type = rawType || 'foryou';
     const uri = req.headers.get('X-URI') || '';
-    console.log(`Base route fetching with URI: ${uri}, type: ${type}`);
+    // console.log(`Base route fetching with URI: ${uri}, type: ${type}`);
     return NextResponse.json(await posts(uri, type));
 }

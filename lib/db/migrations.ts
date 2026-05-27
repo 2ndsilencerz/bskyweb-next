@@ -16,6 +16,7 @@ migrations['001'] = {
             .addColumn('indexedAt', 'varchar', (col) => col.notNull())
             .addColumn('uri', 'varchar', (col) => col.primaryKey())
             .addColumn('cid', 'varchar', (col) => col.notNull())
+            .addColumn('tag', 'varchar', (col) => col.notNull())
             .execute()
         await db.schema
             .createTable('last_state')

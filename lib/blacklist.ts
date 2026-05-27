@@ -74,7 +74,7 @@ export function startBlacklistScheduler() {
         state.isApiUpdateRunning = true;
         try {
             console.log('Updating blacklist from Bsky...');
-            getBlacklistFromBsky().catch(e => console.error(`Error updating blacklist from Bsky: ${e}`));
+            getBlacklistFromBsky().catch(e => console.error(`Error updating blacklist from Bsky: ${e.error}`));
         } finally {
             state.isApiUpdateRunning = false;
         }

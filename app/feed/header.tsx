@@ -16,6 +16,13 @@ export default async function Header({title}: { title: string }) {
     });
     const savedFeeds = await getSavedFeeds();
     feeds.push(...savedFeeds);
+
+    const personalFeed: Feed = {
+        uri: 'personal',
+        title: 'Personal',
+        image: placeholderImg,
+    }
+    feeds.push(personalFeed);
     const wuwaFeed: Feed = {
         uri: 'wuwa',
         title: 'Wuthering Waves',
@@ -79,6 +86,7 @@ export function FeedMenu({feed, title}: { feed: Feed, title: string }): JSX.Elem
     const titles: Record<string, string> = {
         'following': 'Following',
         'for-you': 'For You',
+        'personal': 'Personal',
         'wuwa': 'Wuthering Waves',
         'miku': 'Hatsune Miku',
         'touhou': 'Touhou Project',

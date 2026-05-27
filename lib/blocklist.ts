@@ -28,10 +28,10 @@ export function startBlocklistScheduler() {
 
     console.log('Starting Blocklist Scheduler...');
 
-    getBlocklist().catch(e => console.error(`Error loading blocklist: ${e}`));
+    getBlocklist().catch(e => console.error(`Error loading blocklist: ${e.error}`));
 
     setInterval(() => {
-        getBlocklist().catch(e => console.error(`Error loading blocklist: ${e}`));
+        getBlocklist().catch(e => console.error(`Error loading blocklist: ${e.error}`));
     }, 10 * 60 * 1000);
 }
 

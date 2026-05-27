@@ -31,9 +31,9 @@ export function startProfileFetcherScheduler() {
     state.schedulerStarted = true;
 
     console.log('Starting Profile Fetcher Scheduler...');
-    getProfileInfo().catch(e => console.error(`Error loading: ${e}`));
+    getProfileInfo().catch(e => console.error(`Error loading: ${e.error}`));
     setInterval(() => {
-        getProfileInfo().catch(e => console.error(`Error loading: ${e}`));
+        getProfileInfo().catch(e => console.error(`Error loading: ${e.error}`));
     }, 24 * 60 * 60 * 1000);
 }
 
