@@ -150,7 +150,7 @@ async function shouldCollect(post: any): Promise<boolean> {
 async function saveToDb(post: { uri: string; cid: string; indexedAt: string; createdAt: string, tag: string }) {
     const db = getDB();
     try {
-        await db.insertInto('posts')
+        void db.insertInto('posts')
             .values(post)
             .onConflict(oc => oc.column('uri').doNothing())
             .execute().then(() => console.log(`Post saved to DB: ${post.uri}`));

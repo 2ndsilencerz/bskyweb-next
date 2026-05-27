@@ -26,8 +26,17 @@ export async function startSearching() {
 
 export async function searchIndefinitely(q: string, cursor: string, since: string) {
     console.log(`Starting indefinite search for tag: ${q}`);
+    let newSince;
+    let newCursor = '';
     while (true) {
         // console.log(`Search for tag: ${q} with cursor: ${cursor} and since: ${since}`);
+        if (!newSince || newSince === '') {
+            console.log(`Tracing new post for tag: ${q} with cursor: ${cursor} and since: ${since}`);
+            const newResult = await searchPost(q, newCursor, '', true);
+            newCursor = newResult.cursor ? newResult.cursor : '';
+            newSince = new Date(newResult.since) < new Date(since) ? newResult.since : '';
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
         const result = await searchPost(q, cursor, since);
         cursor = result.cursor ? result.cursor : '';
         // console.log(`Search for tag: ${q} completed with new cursor: ${cursor} and since: ${since}`);
@@ -38,7 +47,8 @@ export async function searchIndefinitely(q: string, cursor: string, since: strin
 export async function searchPost(
     q: string,
     cursor: string,
-    since: string
+    since: string,
+    old?: boolean
 ) {
     try {
         const hostname = `http://${process.env.FEEDGEN_HOSTNAME}`;
@@ -72,7 +82,7 @@ export async function searchPost(
             };
         }
         for (const post of postViews) {
-            await db.insertInto('posts').values({
+            void db.insertInto('posts').values({
                 createdAt: new Date().toISOString(),
                 indexedAt: post.indexedAt,
                 uri: post.uri,
@@ -86,11 +96,13 @@ export async function searchPost(
         console.log(`Total updated post: ${(await db.selectFrom('posts').select('uri').distinct().execute()).length}`);
         const lastPost = postReq.data.posts[postReq.data.posts.length - 1];
         const indexedAt = lastPost.indexedAt;
-        await db.insertInto('last_state').values({
-            q: q,
-            cursor: indexedAt,
-        }).onConflict(oc => oc.column('q').doUpdateSet({cursor: indexedAt}))
-            .execute().catch((e) => console.error(`Error insert db last_state: ${e.error}`));
+        if (!old) {
+            void db.insertInto('last_state').values({
+                q: q,
+                cursor: indexedAt,
+            }).onConflict(oc => oc.column('q').doUpdateSet({cursor: indexedAt}))
+                .execute().catch((e) => console.error(`Error insert db last_state: ${e.error}`));
+        }
         return {cursor: postReq.data.cursor, since: postReq.data.posts[postReq.data.posts.length - 1].indexedAt};
     } catch (e) {
         console.log(`Error searchPost with q: ${q} cursor: ${cursor}`, e);
