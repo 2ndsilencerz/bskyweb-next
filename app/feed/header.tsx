@@ -23,24 +23,24 @@ export default async function Header({title}: { title: string }) {
         image: placeholderImg,
     }
     feeds.push(personalFeed);
-    const wuwaFeed: Feed = {
-        uri: 'wuwa',
-        title: 'Wuthering Waves',
-        image: placeholderImg,
-    }
-    feeds.push(wuwaFeed);
-    const mikuFeed: Feed = {
-        uri: 'miku',
-        title: 'Hatsune Miku',
-        image: placeholderImg,
-    }
-    feeds.push(mikuFeed);
-    const touhouFeed: Feed = {
-        uri: 'touhou',
-        title: 'Touhou Project',
-        image: placeholderImg,
-    }
-    feeds.push(touhouFeed);
+    // const wuwaFeed: Feed = {
+    //     uri: 'wuwa',
+    //     title: 'Wuthering Waves',
+    //     image: placeholderImg,
+    // }
+    // feeds.push(wuwaFeed);
+    // const mikuFeed: Feed = {
+    //     uri: 'miku',
+    //     title: 'Hatsune Miku',
+    //     image: placeholderImg,
+    // }
+    // feeds.push(mikuFeed);
+    // const touhouFeed: Feed = {
+    //     uri: 'touhou',
+    //     title: 'Touhou Project',
+    //     image: placeholderImg,
+    // }
+    // feeds.push(touhouFeed);
     const feedsMenu = feeds.map((feed) => {
         return <FeedMenu
             key={feed.uri}

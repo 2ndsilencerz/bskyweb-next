@@ -44,12 +44,19 @@ export async function getPersonalFeed(limit: number, cursor: number) {
 
     const agent = await getAgent();
     const postViews: PostView[] = [];
-    for (const post of posts) {
-        const postView = await agent.app.bsky.feed.getPosts({
+    const postViewPromises = posts.map(post =>
+        agent.app.bsky.feed.getPosts({
             uris: [post.uri]
         }).catch((err) => {
             console.error(`Error fetching post view for ${post.uri}: ${err.error}`)
-        }).then(res => res && res.success ? res.data : null);
+            return null;
+        }).then(res => res && res.success ? res.data : null)
+    );
+
+    const postViewResults = await Promise.all(postViewPromises);
+
+    for (let i = 0; i < postViewResults.length; i++) {
+        const postView = postViewResults[i];
 
         if (!postView) continue;
 
