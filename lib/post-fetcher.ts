@@ -41,6 +41,7 @@ export async function searchIndefinitely(q: string, cursor: string, since: strin
         const result = await searchPost(q, cursor, since);
         cursor = result.cursor ? result.cursor : '';
         // console.log(`Search for tag: ${q} completed with new cursor: ${cursor} and since: ${since}`);
+        if (Number(cursor) >= 10000) cursor = '';
         await new Promise(resolve => setTimeout(resolve, 10000));
     }
 }
@@ -88,7 +89,7 @@ export async function searchPost(
                 } else {
                     newCursor = '0';
                 }
-                newCursor = (Number(newCursor) + 25).toString();
+                newCursor = (Number(newCursor) + 50).toString();
             }
             // console.log(`[${uid}] New cursor: ${newCursor}`);
             return {
@@ -120,7 +121,7 @@ export async function searchPost(
         }
         // console.log(`[${new Date().toISOString()} ${uid}] New posts found for tag: ${q} with cursor: ${cursor} and since: ${since}. Last response cursor: ${postReq.data.cursor}.`);
         return {
-            cursor: postReq.data.cursor ? Number(postReq.data.cursor) > Number(cursor) ? postReq.data.cursor : (Number(postReq.data.cursor) + 25).toString() : cursor ? (Number(cursor) + 25).toString() : '25',
+            cursor: postReq.data.cursor ? Number(postReq.data.cursor) > Number(cursor) ? postReq.data.cursor : (Number(postReq.data.cursor) + 50).toString() : cursor ? (Number(cursor) + 50).toString() : '50',
             since: postReq.data.posts[postReq.data.posts.length - 1].indexedAt
         };
     } catch (e) {

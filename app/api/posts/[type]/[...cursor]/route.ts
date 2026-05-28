@@ -107,12 +107,12 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                     let embed;
                     let imageExist, videoExist, externalExist;
                     try {
-                        if (checkBlocklist(post.post.author.did)) {
+                        if (post.post.author && checkBlocklist(post.post.author?.did)) {
                             return false;
-                        } else if (checkMuteList(post.post.author.did)) {
+                        } else if (post.post.author && checkMuteList(post.post.author?.did)) {
                             return false;
                         } else if (post.post.viewer?.threadMuted) {
-                            console.log(`Post ${post.post.uri} is muted`);
+                            if (post.post.uri) console.log(`Post ${post.post.uri} is muted`);
                             return false;
                         } else if (post.post.record && post.post.record.text &&
                             // !checkDictionary(post.post.record.text as string) &&
@@ -148,8 +148,8 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                 });
                 const seenUris = new Set<string>();
                 feedRes.data.feed = feedRes.data.feed.filter((post) => {
-                    if (seenUris.has(post.post.uri)) {
-                        console.log(`Removing duplicate post: ${post.post.uri}`);
+                    if (post.post.uri && seenUris.has(post.post.uri)) {
+                        if (post.post.uri) console.log(`Removing duplicate post: ${post.post.uri}`);
                         return false;
                     }
                     seenUris.add(post.post.uri);

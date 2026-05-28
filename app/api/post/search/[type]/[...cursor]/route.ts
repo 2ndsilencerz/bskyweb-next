@@ -54,6 +54,7 @@ export async function posts(cursor: string, type: string, since: string): Promis
                 const feedRes = await agent.app.bsky.feed.searchPosts({
                     q: '#' + type,
                     cursor: cursor !== 'x' ? cursor : undefined,
+                    limit: 50,
                     tag: [type],
                     until: since
                 }).catch((error) => {

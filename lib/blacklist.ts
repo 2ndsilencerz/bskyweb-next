@@ -5,6 +5,16 @@ import {isMutedWordsPref, MutedWord} from "@atproto/api/dist/client/types/app/bs
 import {Preferences} from "@atproto/api/src/client/types/app/bsky/actor/defs";
 import {AtpAgent} from "@atproto/api";
 
+function logRateLimit(operation: string, headers?: Record<string, string>) {
+    if (!headers) return;
+    const limit = headers['ratelimit-limit'];
+    const remaining = headers['ratelimit-remaining'];
+    const reset = headers['ratelimit-reset'];
+    if (limit || remaining || reset) {
+        console.log(`[API Rate Limit - ${operation}] Limit: ${limit}, Remaining: ${remaining}, Reset: ${reset ? new Date(parseInt(reset) * 1000).toISOString() : 'N/A'}`);
+    }
+}
+
 interface ListData {
     blacklist: string[];
     dictionary: dictionary;
@@ -122,7 +132,9 @@ export async function getBlacklistFromBsky(isRemove?: boolean, word?: string): P
     }
 
     const agent = await getAgent();
-    const preferences = await agent.app.bsky.actor.getPreferences().then(r => r.data.preferences);
+    const preferencesResponse = await agent.app.bsky.actor.getPreferences();
+    logRateLimit('getPreferences', preferencesResponse.headers as Record<string, string>);
+    const preferences = preferencesResponse.data.preferences;
     const mutedPref = preferences.filter(pref => pref.$type === 'app.bsky.actor.defs#mutedWordsPref');
 
     try {
@@ -209,6 +221,10 @@ function saveBlacklistToBsky(agent: AtpAgent, preferences: Preferences) {
     });
 
     agent.app.bsky.actor.putPreferences({preferences: preferences})
-        .then((response) => console.log(`Mutes added successfully: ${JSON.stringify(response)}`))
-        .catch(e => console.error(`Error updating muted words list: ${e}`));
+        .then((response) => {
+            logRateLimit('putPreferences', response.headers as Record<string, string>);
+            console.log(`Mutes added successfully: ${JSON.stringify(response)}`);
+        })
+        .catch(e => console.error(`Error updating muted words list: ${e}`))
+        .finally();
 }

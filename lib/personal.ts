@@ -43,7 +43,7 @@ export async function getPersonalFeed(limit: number, cursor: number) {
     const muteLists = await getMuteList();
 
     const agent = await getAgent();
-    let postViews: PostView[] = [];
+    const postViews: PostView[] = [];
     for (const post of posts) {
         const postView = await agent.app.bsky.feed.getPosts({
             uris: [post.uri]
@@ -53,7 +53,7 @@ export async function getPersonalFeed(limit: number, cursor: number) {
 
         if (!postView) continue;
 
-        postViews = postViews.filter((post) => {
+        postView.posts = postView.posts.filter((post) => {
             let embed;
             let imageExist, videoExist, externalExist;
             try {
@@ -69,16 +69,10 @@ export async function getPersonalFeed(limit: number, cursor: number) {
                     return false;
                 } else if (post.viewer?.threadMuted) {
                     console.log(`Post ${post.uri} is muted`);
-                    void db.deleteFrom('posts')
-                        .where('uri', '=', post.uri)
-                        .execute();
                     return false;
                 } else if (post.record && post.record.text &&
                     // !checkDictionary(post.post.record.text as string) &&
                     checkBlacklist(post.record.text as string, blacklist)) {
-                    void db.deleteFrom('posts')
-                        .where('uri', '=', post.uri)
-                        .execute();
                     return false;
                 }
 
@@ -104,15 +98,12 @@ export async function getPersonalFeed(limit: number, cursor: number) {
                 //     msg = `Removing post ${post.post.uri} due to blacklisted word`
                 // }
                 // console.log(msg);
-                void db.deleteFrom('posts')
-                    .where('uri', '=', post.uri)
-                    .execute();
                 return false;
             }
             return true;
         });
         const seenUris = new Set<string>();
-        postViews = postViews.filter((post) => {
+        postView.posts = postView.posts.filter((post) => {
             if (seenUris.has(post.uri)) {
                 console.log(`Removing duplicate post: ${post.uri}`);
                 return false;

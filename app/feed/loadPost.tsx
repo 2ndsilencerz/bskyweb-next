@@ -99,13 +99,13 @@ export default function LoadPost({type}: { type: string }) {
         return (
             <div className="feed-container" id={uuid}>
                 {postData.map((item, index) => {
-                    if ("post" in item) {
+                    if (item && "post" in item) {
                         if (!item?.post) return null;
 
                         // Convert the complex ATProto object into a plain serializable JSON object
                         const serializablePost = JSON.parse(JSON.stringify(item.post));
                         return callPostCard(item.post.uri, index, serializablePost);
-                    } else {
+                    } else if (item) {
                         // Convert the complex ATProto object into a plain serializable JSON object
                         const serializablePost = JSON.parse(JSON.stringify(item));
                         return callPostCard(item.uri, index, serializablePost);
