@@ -83,13 +83,13 @@ export async function posts(cursor: string, type: string, since: string): Promis
                         }
 
                         if (isEmbedImagesView(post.embed) || (isMediaView(post.embed) && isEmbedImagesView((post.embed as EmbedMediaView).media))) {
-                            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedImagesView;
+                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedImagesView;
                             imageExist = !(embed.images == null || embed.images.length == 0);
                         } else if (isEmbedVideoView(post.embed) || (isMediaView(post.embed) && isEmbedVideoView((post.embed as EmbedMediaView).media))) {
-                            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedVideoView;
+                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedVideoView;
                             videoExist = !(embed.playlist == null || embed.playlist.length == 0);
                         } else if (isEmbedExternalView(post.embed) || (isMediaView(post.embed) && isEmbedExternalView((post.embed as EmbedMediaView).media))) {
-                            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedExternalView;
+                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedExternalView;
                             externalExist = !(embed.external?.uri == undefined || embed.external.uri == '');
                         }
                     } catch (error) {

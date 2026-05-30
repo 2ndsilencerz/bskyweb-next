@@ -121,13 +121,13 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                         }
 
                         if (isEmbedImagesView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedImagesView((post.post.embed as EmbedMediaView).media))) {
-                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedImagesView;
+                            embed = (isMediaView(post.post.embed) ? (post.post.embed as EmbedMediaView).media : post.post.embed) as EmbedImagesView;
                             imageExist = !(embed.images == null || embed.images.length == 0);
                         } else if (isEmbedVideoView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedVideoView((post.post.embed as EmbedMediaView).media))) {
-                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedVideoView;
+                            embed = (isMediaView(post.post.embed) ? (post.post.embed as EmbedMediaView).media : post.post.embed) as EmbedVideoView;
                             videoExist = !(embed.playlist == null || embed.playlist.length == 0);
                         } else if (isEmbedExternalView(post.post.embed) || (isMediaView(post.post.embed) && isEmbedExternalView((post.post.embed as EmbedMediaView).media))) {
-                            embed = (post.post.embed || (post.post.embed as EmbedMediaView).media) as EmbedExternalView;
+                            embed = (isMediaView(post.post.embed) ? (post.post.embed as EmbedMediaView).media : post.post.embed) as EmbedExternalView;
                             externalExist = !(embed.external?.uri == undefined || embed.external.uri == '');
                         }
                     } catch (error) {
