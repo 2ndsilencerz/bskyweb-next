@@ -1,23 +1,18 @@
 import {getAgent} from '@/lib/bsky';
 import {NextResponse} from "next/server";
 import {AppBskyFeedSearchPosts} from "@atproto/api";
+import {isView as isEmbedImagesView,} from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import {isView as isEmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
+import {isView as isEmbedExternalView} from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import {
-    isView as isEmbedImagesView,
-    View as EmbedImagesView,
-} from "@atproto/api/dist/client/types/app/bsky/embed/images";
-import {isView as isEmbedVideoView, View as EmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
-import {
-    isView as isEmbedExternalView,
-    View as EmbedExternalView
-} from "@atproto/api/dist/client/types/app/bsky/embed/external";
-import {
-    isView as isMediaView,
+    isView as isEmbedMediaView,
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import {getBlacklist} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
 import {checkBlacklist, checkBlocklist, checkMuteList} from "@/app/api/posts/[type]/[...cursor]/route";
+import {ViewRecord} from "@atproto/api/dist/client/types/app/bsky/embed/record";
 
 let blacklist: string[] = [];
 let blockList: string[] = [];
@@ -67,7 +62,7 @@ export async function posts(cursor: string, type: string, since: string): Promis
                 // console.log(`Feed: ${JSON.stringify(feedRes)}`)
                 feedRes.data.posts = feedRes.data.posts.filter((post) => {
                     let embed;
-                    let imageExist, videoExist, externalExist;
+                    let imageExist, videoExist, externalExist, quoteExist;
                     try {
                         if (checkBlocklist(post.author.did, blockList)) {
                             return false;
@@ -80,23 +75,33 @@ export async function posts(cursor: string, type: string, since: string): Promis
                             // !checkDictionary(post.post.record.text as string) &&
                             checkBlacklist(post.record.text as string, blacklist)) {
                             return false;
+                        } else if (isEmbedMediaView(post.embed) && ((post.embed as EmbedMediaView).record.record as ViewRecord).value.text) {
+                            const embedMedia = post.embed as EmbedMediaView;
+                            // console.log(`Quote found in post ${post.uri}. Checking blacklist...`);
+                            try {
+                                quoteExist = checkBlacklist((embedMedia.record.record as ViewRecord).value.text as string);
+                            } catch (error) {
+                                // console.error(`Error checking blacklist for post ${post.uri}: ${error.error}`);
+                                return false;
+                            }
+                            return quoteExist;
                         }
 
-                        if (isEmbedImagesView(post.embed) || (isMediaView(post.embed) && isEmbedImagesView((post.embed as EmbedMediaView).media))) {
-                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedImagesView;
-                            imageExist = !(embed.images == null || embed.images.length == 0);
-                        } else if (isEmbedVideoView(post.embed) || (isMediaView(post.embed) && isEmbedVideoView((post.embed as EmbedMediaView).media))) {
-                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedVideoView;
-                            videoExist = !(embed.playlist == null || embed.playlist.length == 0);
-                        } else if (isEmbedExternalView(post.embed) || (isMediaView(post.embed) && isEmbedExternalView((post.embed as EmbedMediaView).media))) {
-                            embed = (isMediaView(post.embed) ? (post.embed as EmbedMediaView).media : post.embed) as EmbedExternalView;
-                            externalExist = !(embed.external?.uri == undefined || embed.external.uri == '');
+                        if (isEmbedImagesView(post.embed)) {
+                            // console.log(`Image found in post ${post.uri}`);
+                            imageExist = true;
+                        } else if (isEmbedVideoView(post.embed)) {
+                            // console.log(`Video found in post ${post.uri}`);
+                            videoExist = true;
+                        } else if (isEmbedExternalView(post.embed)) {
+                            // console.log(`External link found in post ${post.uri}`);
+                            externalExist = true;
                         }
                     } catch (error) {
                         console.error(error);
                     }
 
-                    if (!imageExist && !videoExist && !externalExist) {
+                    if (!imageExist && !videoExist && !externalExist && !quoteExist) {
                         // let msg = ``
                         // if (!imageExist && !videoExist && !externalExist) {
                         //     msg = `Removing post ${post.post.uri} due to missing embed`

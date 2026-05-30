@@ -6,16 +6,20 @@ import {
     View as EmbedImagesView,
     ViewImage
 } from "@atproto/api/dist/client/types/app/bsky/embed/images";
-import {View as EmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
+import {isView as isEmbedVideoView, View as EmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
 import {
     isView as isEmbedExternalView,
     View as EmbedExternalView
 } from "@atproto/api/dist/client/types/app/bsky/embed/external";
-import {isView as isMediaView} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
+import {
+    isView as isMediaView,
+    View as EmbedMediaView
+} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import Image from "next/image";
 import {JSX, useRef, useState} from "react";
 import {TextResult} from "deepl-node";
 import axios from "axios";
+import {ViewRecord} from "@atproto/api/dist/client/types/app/bsky/embed/record";
 
 // Use a safe way to escape HTML or trust React's default escaping
 function convertHashtagsToLinks(text: string): (string | JSX.Element)[] {
@@ -100,8 +104,13 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     ) || false;
     const isFollowing = post.author.viewer?.following || false;
 
-    const media = isMediaView(post.embed) ? post.embed.media : undefined;
-    const embed = post.embed || media;
+    // const media = isMediaView(post.embed) ? post.embed.media : undefined;
+    const embed = post.embed;
+    const quotePostText = post.embed && isMediaView(post.embed) ?
+        (((post.embed as EmbedMediaView).record.record as ViewRecord).value as { text?: string })?.text as string : '';
+    const quotePostMedia = post.embed && isMediaView(post.embed) ?
+        (post.embed as EmbedMediaView).media : undefined;
+    // console.log('quotePostMedia', JSON.stringify(quotePostMedia));
 
     const handleTranslate = async () => {
         setIsTranslateAnimating(true);
@@ -332,11 +341,25 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                             {/* Embeds (Images/Video) */}
                             <div className="mt-2 rounded-3 overflow-hidden border-0">
                                 {isEmbedImagesView(embed) && <ConstructImage view={embed} nsfw={nsfwPost}/>}
-                                {post.embed?.$type === 'app.bsky.embed.video#view' && (
-                                    <VideoTemplate video={(post.embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>
-                                )}
+                                {isEmbedVideoView(embed) &&
+                                    <VideoTemplate video={(embed as EmbedVideoView).playlist} nsfw={nsfwPost}/>}
                                 {isEmbedExternalView(embed) && <ExternalEmbed external={embed}/>}
                             </div>
+
+                            {/* Quote Post */}
+                            {quotePostText && quotePostMedia && (
+                                <div className="mt-2 small lh-base text-break">
+                                    <div>Quote</div>
+                                    {convertHashtagsToLinks(quotePostText)}
+                                    {isEmbedImagesView(quotePostMedia) &&
+                                        <ConstructImage view={quotePostMedia as EmbedImagesView} nsfw={nsfwPost}/>}
+                                    {isEmbedVideoView(quotePostMedia) &&
+                                        <VideoTemplate video={(quotePostMedia as EmbedVideoView).playlist}
+                                                       nsfw={nsfwPost}/>}
+                                    {isEmbedExternalView(quotePostMedia) &&
+                                        <ExternalEmbed external={quotePostMedia as EmbedExternalView}/>}
+                                </div>
+                            )}
 
                             {/* Actions */}
                             <div className="d-flex justify-content-end mt-2 gap-2" style={{minHeight: '20px'}}>
