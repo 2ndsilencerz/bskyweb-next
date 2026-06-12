@@ -115,7 +115,13 @@ export async function posts(cursor: string, type: string, since: string): Promis
                 });
                 const seenUris = new Set<string>();
                 feedRes.data.posts = feedRes.data.posts.filter((post) => {
-                    if (seenUris.has(post.uri)) {
+                    let embedUri = "";
+                    if (post.embed && (post.embed as EmbedMediaView) && (post.embed as EmbedMediaView).record &&
+                        (post.embed as EmbedMediaView).record.record &&
+                        ((post.embed as EmbedMediaView).record.record as ViewRecord).uri) {
+                        embedUri = ((post.embed as EmbedMediaView).record.record as ViewRecord).uri;
+                    }
+                    if (seenUris.has(post.uri) || embedUri && seenUris.has(embedUri)) {
                         console.log(`Removing duplicate post: ${post.uri}`);
                         return false;
                     }

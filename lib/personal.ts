@@ -18,6 +18,7 @@ import {
 import {getBlacklist} from "@/lib/blacklist";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
+import {ViewRecord} from "@atproto/api/dist/client/types/app/bsky/embed/record";
 
 
 export async function getPersonalFeed(limit: number, cursor: number) {
@@ -111,7 +112,13 @@ export async function getPersonalFeed(limit: number, cursor: number) {
         });
         const seenUris = new Set<string>();
         postView.posts = postView.posts.filter((post) => {
-            if (seenUris.has(post.uri)) {
+            let embedUri = "";
+            if (post.embed && (post.embed as EmbedMediaView) && (post.embed as EmbedMediaView).record &&
+                (post.embed as EmbedMediaView).record.record &&
+                ((post.embed as EmbedMediaView).record.record as ViewRecord).uri) {
+                embedUri = ((post.embed as EmbedMediaView).record.record as ViewRecord).uri;
+            }
+            if (seenUris.has(post.uri) || embedUri && seenUris.has(embedUri)) {
                 console.log(`Removing duplicate post: ${post.uri}`);
                 return false;
             }
