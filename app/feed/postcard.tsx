@@ -16,7 +16,7 @@ import {
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import Image from "next/image";
-import {JSX, useRef, useState} from "react";
+import React, {JSX, useRef, useState} from "react";
 import {TextResult} from "deepl-node";
 import axios from "axios";
 import {ViewRecord} from "@atproto/api/dist/client/types/app/bsky/embed/record";
@@ -133,6 +133,18 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
         setIsTranslateAnimating(false);
         translateAnimatedRef.current = false;
     }
+
+    // Auto-translate CJK text
+    React.useEffect(() => {
+        const containsCJK = (text: string): boolean => {
+            const cjkRegex = /[\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/;
+            return cjkRegex.test(text);
+        };
+
+        if (postText && containsCJK(postText) && !translatedRef.current && !translateAnimatedRef.current) {
+            void handleTranslate();
+        }
+    }, [postText]);
 
     const handleMuteAuthor = async () => {
         setIsMuteAnimating(true);

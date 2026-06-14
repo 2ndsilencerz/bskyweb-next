@@ -177,6 +177,7 @@ function getBlacklistFromLocalAndMergeWithCache() {
     state.cachedBlacklist = removeDuplicatesAndSort(state.cachedBlacklist);
 
     state.cachedDictionary = data.dictionary;
+    state.cachedDictionary['misc'] = removeDuplicatesAndSort(data.dictionary['misc']);
 
     console.log(`Blacklist from cache updated. Count: ${state.cachedBlacklist.length}`);
 }
@@ -187,6 +188,7 @@ function readBlacklistFromLocal(): ListData {
 }
 
 function removeDuplicatesAndSort(array: string[]): string[] {
+    array.forEach(word => word.trim());
     array = array.filter(word => {
         word = word.toLowerCase();
         if (word.includes('#')) {

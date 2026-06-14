@@ -1503,7 +1503,8 @@
     "wuwa": [
       "wutheringwaves",
       "鳴潮",
-      "명조"
+      "명조",
+      "WuWaFanart"
     ],
     "miku": [
       "初音ミク",
@@ -1514,13 +1515,31 @@
       "東方project"
     ],
     "misc": [
-      "maitetsu",
-      "まいてつ",
-      "レヱル・ロマネスク",
-      "pulao",
+      "阿慈谷ヒフミ",
       "蒲牢",
+      "百合園セイア",
       "天童アリス",
-      "alicetendou"
+      "十六夜ノノミ",
+      "レヱル・ロマネスク",
+      "まいてつ",
+      "yurizonoseia",
+      "yurizono seia",
+      "tendoualice",
+      "tendou alice",
+      "seiayurizono",
+      "seia yurizono",
+      "pulao",
+      "nonomiizayoi",
+      "nonomi izayoi",
+      "maitetsu",
+      "izayoinonomi",
+      "izayoi nonomi",
+      "hifumiajitani",
+      "hifumi ajitani",
+      "alicetendou",
+      "alice tendou",
+      "ajitanihifumi",
+      "ajitani hifumi"
     ]
   },
   "ignoreList": []

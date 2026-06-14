@@ -41,7 +41,7 @@ export async function searchIndefinitely(q: string, cursor: string, since: strin
         cursor = result.cursor ? result.cursor : '';
         // console.log(`Search for tag: ${q} completed with new cursor: ${cursor} and since: ${since}`);
         if (Number(cursor) >= 10000) cursor = '';
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        await new Promise(resolve => setTimeout(resolve, 30000));
     }
 }
 
