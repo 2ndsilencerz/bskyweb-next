@@ -2,21 +2,16 @@ import WebSocket from 'ws';
 import {getBlacklist, getDictionary} from './blacklist';
 import {getDB} from './db';
 import {checkBlacklist, checkBlocklist, checkMuteList} from "@/app/api/posts/[type]/[...cursor]/route";
+import {isView as isEmbedImagesView} from "@atproto/api/dist/client/types/app/bsky/embed/images";
 import {
-    isView as isEmbedImagesView,
-    View as EmbedImagesView
-} from "@atproto/api/dist/client/types/app/bsky/embed/images";
-import {
-    isView as isMediaView,
+    isView as isEmbedMediaView,
     View as EmbedMediaView
 } from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
-import {isView as isEmbedVideoView, View as EmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
-import {
-    isView as isEmbedExternalView,
-    View as EmbedExternalView
-} from "@atproto/api/dist/client/types/app/bsky/embed/external";
+import {isView as isEmbedVideoView} from "@atproto/api/dist/client/types/app/bsky/embed/video";
+import {isView as isEmbedExternalView} from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import {getBlocklist} from "@/lib/blocklist";
 import {getMuteList} from "@/lib/mutelist";
+import {ViewRecord} from "@atproto/api/dist/client/types/app/bsky/embed/record";
 
 // Jetstream public endpoints
 const JETSTREAM_ENDPOINTS = [
@@ -93,8 +88,9 @@ async function shouldCollect(post: any): Promise<boolean> {
     const text = post.record?.text;
     if (!text) return false;
 
-    const keywords = ['wuwa', 'miku', 'touhou', 'alice tendou', 'pulao', 'maitetsu'];
-    if (!keywords.some(key => text.includes(dictionary[key]))) {
+    const type: string[] = []
+    type.push(...dictionary["wuwa"], ...dictionary["miku"], ...dictionary["touhou"], ...dictionary["misc"]);
+    if (!type.includes(text) && !text.includes(type)) {
         return false;
     }
 
@@ -106,8 +102,7 @@ async function shouldCollect(post: any): Promise<boolean> {
     const blacklist = getBlacklist();
 
     // Check if any dictionary tag is in the post tags or text
-    let embed;
-    let imageExist, videoExist, externalExist;
+    let imageExist, videoExist, externalExist, quoteExist;
     try {
         if (checkBlocklist(post.author.did, blockList)) {
             return false;
@@ -120,23 +115,30 @@ async function shouldCollect(post: any): Promise<boolean> {
             // !checkDictionary(post.post.record.text as string) &&
             checkBlacklist(post.record.text as string, blacklist)) {
             return false;
+        } else if (isEmbedMediaView(post.post.embed)) {
+            const embedRecordWithMedia = post.post.embed as EmbedMediaView;
+            // console.log(`Quote found in post ${post.post.uri}. Checking blacklist...`);
+            try {
+                quoteExist = checkBlacklist((embedRecordWithMedia.record.record as ViewRecord).value.text as string);
+            } catch (error) {
+                // console.error(`Error checking blacklist for post ${post.post.uri}: ${error.error}`);
+                return false;
+            }
+            return quoteExist;
         }
 
-        if (isEmbedImagesView(post.embed) || (isMediaView(post.embed) && isEmbedImagesView((post.embed as EmbedMediaView).media))) {
-            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedImagesView;
-            imageExist = !(embed.images == null || embed.images.length == 0);
-        } else if (isEmbedVideoView(post.embed) || (isMediaView(post.embed) && isEmbedVideoView((post.embed as EmbedMediaView).media))) {
-            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedVideoView;
-            videoExist = !(embed.playlist == null || embed.playlist.length == 0);
-        } else if (isEmbedExternalView(post.embed) || (isMediaView(post.embed) && isEmbedExternalView((post.embed as EmbedMediaView).media))) {
-            embed = (post.embed || (post.embed as EmbedMediaView).media) as EmbedExternalView;
-            externalExist = !(embed.external?.uri == undefined || embed.external.uri == '');
+        if (isEmbedImagesView(post.embed)) {
+            imageExist = true;
+        } else if (isEmbedVideoView(post.embed)) {
+            videoExist = true;
+        } else if (isEmbedExternalView(post.embed)) {
+            externalExist = true;
         }
     } catch (error) {
         console.error(error);
     }
 
-    if (!imageExist && !videoExist && !externalExist) {
+    if (!imageExist && !videoExist && !externalExist && !quoteExist) {
         // let msg = ``
         // if (!imageExist && !videoExist && !externalExist) {
         //     msg = `Removing post ${post.post.uri} due to missing embed`

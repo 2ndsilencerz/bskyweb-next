@@ -13,8 +13,7 @@ export async function startSearching() {
     }
     const type: string[] = []
     const dictionary = getDictionary();
-    type.push(...dictionary["wuwa"], ...dictionary["miku"], ...dictionary["touhou"], ...dictionary["alice tendou"],
-        ...dictionary["pulao"], ...dictionary["maitetsu"]);
+    type.push(...dictionary["wuwa"], ...dictionary["miku"], ...dictionary["touhou"], ...dictionary["misc"]);
     for (const tag of type) {
         const lastState = await db
             .selectFrom('last_state')
