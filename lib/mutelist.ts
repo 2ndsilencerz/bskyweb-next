@@ -64,3 +64,9 @@ export async function getMuteList(): Promise<string[]> {
 
     return state.cachedMutelist;
 }
+
+export function addMute(did: string): void {
+    const state = getState();
+    if (state.cachedMutelist?.includes(did)) return;
+    state.cachedMutelist?.push(did);
+}

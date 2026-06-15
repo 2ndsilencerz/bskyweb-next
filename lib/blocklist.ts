@@ -64,3 +64,9 @@ export async function getBlocklist(): Promise<string[]> {
 
     return state.cachedBlocklist;
 }
+
+export function addBlock(did: string): void {
+    const state = getState();
+    if (state.cachedBlocklist.includes(did)) return;
+    state.cachedBlocklist?.push(did);
+}

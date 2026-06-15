@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {getAgent} from "@/lib/bsky";
+import {addMute} from "@/lib/mutelist";
 
 export async function POST(req: Request) {
     const postUri = req.headers.get('uri');
@@ -22,6 +23,9 @@ export async function mute(handle: string) {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const response = await agent.app.bsky.graph.muteActor({actor: handle});
+                if (response.success) {
+                    addMute(handle);
+                }
                 return response.success;
             } catch (error) {
                 console.error(`Attempt ${attempt} failed:`, error);

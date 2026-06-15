@@ -87,51 +87,153 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
     const [postLikes, setPostLikes] = useState<number>(post.likeCount || 0);
     const animationTemplate = 'flash 0.3s ease-in-out infinite';
     const rainbowTemplate = 'rainbow 3s linear infinite';
+    let postId: string = '', postUri: string = '', postText: string = '', //postComment: string = '', 
+        quotePostText: string = '', quotePostMedia, embed;
+    let authorHandle: string = '', authorAvatar: string = '', authorDisplayName: string = '', initials: string = '',
+        isFollowing: boolean = false;
+    let timeAgoText: string = '', nsfwPost: boolean = false;
+    let handleTranslate: () => Promise<void> = async () => {
+        },
+        handleMuteAuthor: () => Promise<void> = async () => {
+        },
+        handleBlockAuthor: () => Promise<void> = async () => {
+        },
+        handleMutePost: () => Promise<void> = async () => {
+        },
+        handleLike: () => Promise<void> = async () => {
+        },
+        handleBookmark: () => Promise<void> = async () => {
+        };
 
-    if (!post || !isVisible) return <></>;
+    try {
+        postId = post.uri.split('/').pop() || '';
+        postUri = post.uri;
+        postText = (post.record as { text?: string })?.text as string || '';
+        // postComment = post.replyCount ? `Comment: ${post.replyCount}` : '';
+        authorHandle = post.author.handle;
+        authorAvatar = post.author.avatar || '';
+        authorDisplayName = post.author.displayName || post.author.handle;
+        timeAgoText = timeAgo(((post.record as { createdAt?: string })?.createdAt || post.indexedAt) as string);
+        initials = (post.author.displayName || post.author.handle).substring(0, 1);
+        nsfwPost = post.labels?.some(label =>
+            ['sexual', 'porn', 'nudity'].includes(label.val)
+        ) || false;
+        isFollowing = Boolean(post.author.viewer?.following) || false;
 
-    const postId = post.uri.split('/').pop() || '';
-    const postUri = post.uri;
-    const postText = (post.record as { text?: string })?.text as string || '';
-    const postComment = post.replyCount ? `Comment: ${post.replyCount}` : '';
-    const authorHandle = post.author.handle;
-    const authorAvatar = post.author.avatar;
-    const authorDisplayName = post.author.displayName || post.author.handle;
-    const timeAgoText = timeAgo(((post.record as { createdAt?: string })?.createdAt || post.indexedAt) as string);
-    const initials = (post.author.displayName || post.author.handle).substring(0, 1);
-    const nsfwPost = post.labels?.some(label =>
-        ['sexual', 'porn', 'nudity'].includes(label.val)
-    ) || false;
-    const isFollowing = post.author.viewer?.following || false;
+        // const media = isMediaView(post.embed) ? post.embed.media : undefined;
+        embed = post.embed;
+        quotePostText = post.embed && isMediaView(post.embed) ?
+            (((post.embed as EmbedMediaView).record.record as ViewRecord).value as {
+                text?: string
+            })?.text as string : '';
+        quotePostMedia = post.embed && isMediaView(post.embed) ?
+            (post.embed as EmbedMediaView).media : undefined;
+        // console.log('quotePostMedia', JSON.stringify(quotePostMedia));
 
-    // const media = isMediaView(post.embed) ? post.embed.media : undefined;
-    const embed = post.embed;
-    const quotePostText = post.embed && isMediaView(post.embed) ?
-        (((post.embed as EmbedMediaView).record.record as ViewRecord).value as { text?: string })?.text as string : '';
-    const quotePostMedia = post.embed && isMediaView(post.embed) ?
-        (post.embed as EmbedMediaView).media : undefined;
-    // console.log('quotePostMedia', JSON.stringify(quotePostMedia));
-
-    const handleTranslate = async () => {
-        setIsTranslateAnimating(true);
-        translateAnimatedRef.current = true;
-        const res = await axios.post('/api/post/translate', {text: postText}, {
-            headers: {
-                'uri': postUri,
-                'Content-Type': 'application/json',
-            },
-        });
-        if (res.status === 200) {
-            const translated = await res.data as TextResult;
-            setTranslatedFrom('From: ' + translated.detectedSourceLang);
-            translatedFromRef.current = translated.detectedSourceLang;
-            setTranslatedText(translated.text);
-            translatedTextRef.current = translated.text;
-            setIsTranslated(true);
-            translatedRef.current = true;
+        handleTranslate = async () => {
+            setIsTranslateAnimating(true);
+            translateAnimatedRef.current = true;
+            const res = await axios.post('/api/post/translate', {text: postText}, {
+                headers: {
+                    'uri': postUri,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res.status === 200) {
+                const translated = await res.data as TextResult;
+                setTranslatedFrom('From: ' + translated.detectedSourceLang);
+                translatedFromRef.current = translated.detectedSourceLang;
+                setTranslatedText(translated.text);
+                translatedTextRef.current = translated.text;
+                setIsTranslated(true);
+                translatedRef.current = true;
+            }
+            setIsTranslateAnimating(false);
+            translateAnimatedRef.current = false;
         }
-        setIsTranslateAnimating(false);
-        translateAnimatedRef.current = false;
+        handleMuteAuthor = async () => {
+            setIsMuteAnimating(true);
+            muteAnimatedRef.current = true;
+            const res = await axios.post('/api/profile/mute', {uri: post.author.handle}, {
+                headers: {
+                    'uri': post.author.handle,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res.status === 200) {
+                setIsVisible(false);
+                return;
+            } else alert('Failed to mute author');
+            setIsMuteAnimating(false);
+            muteAnimatedRef.current = false;
+        }
+        handleBlockAuthor = async () => {
+            setIsBlockAnimating(true);
+            blockAnimatedRef.current = true;
+            const res = await axios.post('/api/profile/block', {uri: post.author.did}, {
+                headers: {
+                    'uri': post.author.did,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res.status === 200) {
+                setIsVisible(false);
+                return;
+            } else alert('Failed to block author');
+            setIsBlockAnimating(false);
+            blockAnimatedRef.current = false;
+        }
+        handleMutePost = async () => {
+            setIsDeleteAnimating(true);
+            deleteAnimatedRef.current = true;
+            const res = await axios.post('/api/post/mute', {uri: postUri}, {
+                headers: {
+                    'uri': postUri,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res.status === 200) {
+                setIsVisible(false);
+                return;
+            } else alert('Failed to mute post');
+            setIsDeleteAnimating(false);
+            deleteAnimatedRef.current = false;
+        };
+        handleLike = async () => {
+            setIsLikeAnimating(true);
+            likeAnimatedRef.current = true;
+            const res = await axios.post('/api/post/like', {uri: postUri}, {
+                headers: {
+                    'uri': postUri,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const resBody = await res.data;
+            if (res.status === 200 && resBody.success) {
+                setIsLiked(true);
+                setPostLikes(post.likeCount ? post.likeCount + 1 : 0);
+            } else alert('Failed to like post');
+            setIsLikeAnimating(false);
+            likeAnimatedRef.current = false;
+        };
+        handleBookmark = async () => {
+            setIsBookmarkAnimating(true);
+            bookmarkAnimatedRef.current = true;
+            const res = await axios.post('/api/post/bookmark', {uri: postUri}, {
+                headers: {
+                    'uri': postUri,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const resBody = await res.data;
+            if (res.status === 200 && resBody.success) {
+                setIsBookmarked(true);
+            } else alert('Failed to bookmark post');
+            setIsBookmarkAnimating(false);
+            bookmarkAnimatedRef.current = false;
+        };
+    } catch (error) {
+        console.error('Error in PostCard useEffect:', error);
     }
 
     // Auto-translate CJK text
@@ -146,91 +248,7 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
         }
     }, [postText]);
 
-    const handleMuteAuthor = async () => {
-        setIsMuteAnimating(true);
-        muteAnimatedRef.current = true;
-        const res = await axios.post('/api/profile/mute', {uri: post.author.handle}, {
-            headers: {
-                'uri': post.author.handle,
-                'Content-Type': 'application/json',
-            },
-        });
-        if (res.status === 200) {
-            setIsVisible(false);
-            return;
-        } else alert('Failed to mute author');
-        setIsMuteAnimating(false);
-        muteAnimatedRef.current = false;
-    }
-
-    const handleBlockAuthor = async () => {
-        setIsBlockAnimating(true);
-        blockAnimatedRef.current = true;
-        const res = await axios.post('/api/profile/block', {uri: post.author.did}, {
-            headers: {
-                'uri': post.author.did,
-                'Content-Type': 'application/json',
-            },
-        });
-        if (res.status === 200) {
-            setIsVisible(false);
-            return;
-        } else alert('Failed to block author');
-        setIsBlockAnimating(false);
-        blockAnimatedRef.current = false;
-    }
-
-    const handleMutePost = async () => {
-        setIsDeleteAnimating(true);
-        deleteAnimatedRef.current = true;
-        const res = await axios.post('/api/post/mute', {uri: postUri}, {
-            headers: {
-                'uri': postUri,
-                'Content-Type': 'application/json',
-            },
-        });
-        if (res.status === 200) {
-            setIsVisible(false);
-            return;
-        } else alert('Failed to mute post');
-        setIsDeleteAnimating(false);
-        deleteAnimatedRef.current = false;
-    };
-
-    const handleLike = async () => {
-        setIsLikeAnimating(true);
-        likeAnimatedRef.current = true;
-        const res = await axios.post('/api/post/like', {uri: postUri}, {
-            headers: {
-                'uri': postUri,
-                'Content-Type': 'application/json',
-            },
-        });
-        const resBody = await res.data;
-        if (res.status === 200 && resBody.success) {
-            setIsLiked(true);
-            setPostLikes(post.likeCount ? post.likeCount + 1 : 0);
-        } else alert('Failed to like post');
-        setIsLikeAnimating(false);
-        likeAnimatedRef.current = false;
-    };
-
-    const handleBookmark = async () => {
-        setIsBookmarkAnimating(true);
-        bookmarkAnimatedRef.current = true;
-        const res = await axios.post('/api/post/bookmark', {uri: postUri}, {
-            headers: {
-                'uri': postUri,
-                'Content-Type': 'application/json',
-            },
-        });
-        const resBody = await res.data;
-        if (res.status === 200 && resBody.success) {
-            setIsBookmarked(true);
-        } else alert('Failed to bookmark post');
-        setIsBookmarkAnimating(false);
-        bookmarkAnimatedRef.current = false;
-    };
+    if (!post || !isVisible) return <></>;
 
     return (
         <div id={`post-${postIndex}`} className="mb-2">
@@ -331,11 +349,11 @@ export function PostCard({postIndex, post}: { postIndex: number, post: PostView 
                         </div>
                         <div className={"overflow-hidden"}
                              style={{
-                                 background: isLiked ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
+                                 backgroundImage: isLiked ? 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' : 'none',
                                  backgroundSize: '200% 100%',
                                  WebkitBackgroundClip: isLiked ? 'text' : 'initial',
                                  backgroundClip: isLiked ? 'text' : 'initial',
-                                 WebkitTextFillColor: isLiked ? 'transparent' : 'white',
+                                 // WebkitTextFillColor: isLiked ? 'transparent' : 'white',
                                  animation: isLiked ? rainbowTemplate : 'none'
                              }}
                         >

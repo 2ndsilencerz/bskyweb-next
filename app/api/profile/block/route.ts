@@ -1,5 +1,6 @@
 import {getAgent} from "@/lib/bsky";
 import {NextResponse} from "next/server";
+import {addBlock} from "@/lib/blocklist";
 
 export async function POST(req: Request) {
     const postUri = req.headers.get('uri');
@@ -26,6 +27,9 @@ export async function block(did: string) {
                         createdAt: new Date().toISOString()
                     }
                 )
+                if (response.cid || response.uri) {
+                    addBlock(did);
+                }
                 return !!response;
             } catch (error) {
                 console.error(`Attempt ${attempt} failed:`, error);
