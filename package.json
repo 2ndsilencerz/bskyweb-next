@@ -13,6 +13,7 @@
     "@atproto/identity": "^0.2.1",
     "@atproto/lexicon": "^0.2.2",
     "@atproto/repo": "^0.3.2",
+    "@atproto/sync": "^0.3.13",
     "@atproto/syntax": "^0.1.2",
     "@atproto/xrpc-server": "^0.7.9",
     "axios": "^1.16.1",

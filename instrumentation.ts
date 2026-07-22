@@ -12,7 +12,7 @@ export async function register() {
         const {startNotificationScheduler} = await import('@/lib/notification');
         const {startSavedFeedScheduler} = await import('@/lib/saved-feeds');
         const {startProfileFetcherScheduler} = await import('@/lib/profile');
-        const {startJetstreamCollector} = await import('@/lib/jetstream');
+        const {startFirehose} = await import('@/lib/firehose');
         startBlacklistScheduler();
         startBlocklistScheduler();
         startMuteListScheduler();
@@ -20,7 +20,7 @@ export async function register() {
         startNotificationScheduler();
         startSavedFeedScheduler();
         startProfileFetcherScheduler();
-        startJetstreamCollector();
+        startFirehose();
         const {startSearching} = await import('@/lib/post-fetcher');
         void startSearching();
     }

@@ -78,14 +78,14 @@ export async function posts(cursor: string, type?: string): Promise<false | AppB
                 const feedReq: FeedRequest = {
                     feed: !isTimeline ? feedUrl : '',
                     limit: postPerPageLimit,
-                    cursor: cursor != 'x' ? cursor : '',
+                    cursor: (cursor != 'x' && cursor != 'NaN') ? cursor : '',
                 }
 
                 let feedRes;
                 if (isTimeline) {
                     feedRes = await agent.app.bsky.feed.getTimeline({
                         limit: 20,
-                        cursor: cursor != 'x' ? cursor : ''
+                        cursor: (cursor != 'x' && cursor != 'NaN') ? cursor : ''
                     }).catch(error => {
                         console.error(`Attempt ${attempt} failed:`, error.error);
                     }).then(res => res) as AppBskyFeedGetFeed.Response;
@@ -275,7 +275,7 @@ function checkDictionary(text: string) {
 
 async function personalFeed(currentCursor?: string) {
     const limitPerPage = 10;
-    if (currentCursor === 'x') currentCursor = '0';
+    if (currentCursor === 'x' || currentCursor === 'NaN') currentCursor = '0';
     const cursorAsNumber = currentCursor ? parseInt(currentCursor, 10) : 0;
     const postViews = await getPersonalFeed(limitPerPage, cursorAsNumber);
     return {'posts': postViews, 'cursor': cursorAsNumber + limitPerPage}

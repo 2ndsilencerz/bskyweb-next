@@ -46,20 +46,28 @@ export async function posts(cursor: string, type: string, since: string): Promis
         // console.log(`Fetching feed with q: ${type} cursor: ${cursor}`);
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const feedRes = await agent.app.bsky.feed.searchPosts({
+                const query = {
                     q: '#' + type,
-                    cursor: cursor !== 'x' ? cursor : undefined,
+                    cursor: cursor && cursor !== 'x' ? cursor : undefined,
                     limit: 50,
-                    tag: [type],
+                    // tag: [type],
                     until: since
-                }).catch((error) => {
+                }
+                console.log(`Attempt ${attempt} to fetch feed with \nquery: ${JSON.stringify(query)}`);
+                const feedRes = await agent.app.bsky.feed.searchPosts(query).catch((error) => {
                     console.error(`Search failed:`, error.error);
                     return false;
                 }).then(res => res as AppBskyFeedSearchPosts.Response);
 
                 if (!feedRes) return false;
 
-                // console.log(`Feed: ${JSON.stringify(feedRes)}`)
+                const mainQueryResult = {
+                    cursor: feedRes.data.cursor,
+                    hitsTotal: feedRes.data.hitsTotal,
+                    postTotal: feedRes.data.posts.length
+                }
+                console.log(`Feed result for ${type}: \n${JSON.stringify(mainQueryResult)}`)
+                // console.log(`Feed result: ${JSON.stringify(feedRes)}`)
                 feedRes.data.posts = feedRes.data.posts.filter((post) => {
                     let embed;
                     let imageExist, videoExist, externalExist, quoteExist;

@@ -162,6 +162,7 @@ export async function getBlacklistFromBsky(isRemove?: boolean, word?: string): P
         console.log(`Removed word from blacklist: ${word}`);
         console.log(`Blacklist from cache updated. Count: ${state.cachedBlacklist.length}`);
     }
+    state.cachedBlacklist.forEach(w => w.trim());
 
     saveBlacklistToLocal({blacklist: state.cachedBlacklist, dictionary: state.cachedDictionary, ignoreList: []});
     saveBlacklistToBsky(agent, preferences);
@@ -214,9 +215,9 @@ function saveBlacklistToBsky(agent: AtpAgent, preferences: Preferences) {
         for (let word of state.cachedBlacklist) {
             if (word.includes('#')) {
                 word = word.replace('#', '');
-                pref.items.push({value: word.toLowerCase(), targets: ["tag"], actorTarget: "all"});
+                pref.items.push({value: word.trim().toLowerCase(), targets: ["tag"], actorTarget: "all"});
             } else {
-                pref.items.push({value: word.toLowerCase(), targets: ["tag", "content"], actorTarget: "all"});
+                pref.items.push({value: word.trim().toLowerCase(), targets: ["tag", "content"], actorTarget: "all"});
             }
         }
         pref.items.sort((a: MutedWord, b: MutedWord) => b.value.localeCompare(a.value));

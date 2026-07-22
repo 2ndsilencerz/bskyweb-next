@@ -61,7 +61,7 @@ def convert_to_mutable():
         # 4. Export the file
         output_file = 'mutable_final.json'
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(mutable_config, f, ensure_ascii=False, indent=2)
+            json.dump(mutable_config, f, ensure_ascii=False, separators=(',', ':'))
 
         print(f"Success! Exported {len(patterns)} entries to {output_file}")
 
